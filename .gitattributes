@@ -1,0 +1,3 @@
+datasets/Ratings.csv filter=lfs diff=lfs merge=lfs -text
+datasets/Users.csv filter=lfs diff=lfs merge=lfs -text
+datasets/Books.csv filter=lfs diff=lfs merge=lfs -text
