@@ -71,7 +71,6 @@ def predict_unrated_books(user_id, model, non_note):
 
 def recommandation_collaborative_top_k(k, user_id, model, ratings, ids):
     if user_id not in ids:
-        print("Utilisateur pas encore enregistré")
         return 
     non_note=get_unrated_item(user_id, ratings)
 

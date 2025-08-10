@@ -18,6 +18,7 @@ def save_df_to_pickle(df, path):
             path (str) : chemin du fichier qui sera créé.
     """
     df.to_pickle(path)
+    
 def nettoyage_word2vec(text):
     if isinstance(text, str):
         text = text.lower()
