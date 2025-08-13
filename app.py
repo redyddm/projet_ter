@@ -1,27 +1,34 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import glob
-import re
-import os
 
 @st.cache_data
 def load_books():
-    books = pd.read_pickle('./datasets/goodreads/perso/content_dataset_desc_en_final.pkl')
-    return books
+    return pd.read_pickle('./datasets/reco_datasets/content_dataset_desc_final.pkl')
 
 @st.cache_data
 def load_ratings():
-    ratings = pd.read_pickle('./datasets/goodreads/reco/collaborative_dataset_final.pkl')
-    return ratings
-
-books = load_books()
-ratings = load_ratings()
+    return pd.read_pickle('./datasets/reco_datasets/ratings_books_final.pkl')
 
 st.title('Recommandation de livres')
 
-if st.checkbox('Afficher les 20 premiers livres'):
-    st.dataframe(books.head(20))
+with st.spinner('Chargement des données...'):
+    books = load_books()
+    ratings = load_ratings()
 
-if st.checkbox('Afficher les 20 premieres notes'):
-    st.dataframe(ratings.head(20))
+st.success('Données chargées !')
+
+# Liste des utilisateurs uniques
+user_ids = ratings['user_id'].unique()
+selected_user = st.selectbox('Sélectionnez un utilisateur', user_ids)
+
+# Filtrer les notes de cet utilisateur
+user_ratings = ratings[ratings['user_id'] == selected_user]
+
+st.subheader(f"Notes de l'utilisateur {selected_user}")
+
+if not user_ratings.empty:
+    # On peut joindre avec le dataset des livres pour afficher les titres
+    user_ratings
+else:
+    st.write("Cet utilisateur n'a aucune note enregistrée.")
