@@ -80,3 +80,23 @@ def recommandation_collaborative_top_k(k, user_id, model, ratings, ids):
     
     return top_k
     
+def recommandation_collaborative_top_k_test(k, user_id, model, ratings_train, ratings_test):
+    # Récupère les livres que l'utilisateur a notés dans le set de test
+    test_items = ratings_test.loc[ratings_test['ID'] == user_id, 'Name'].tolist()
+    if len(test_items) == 0:
+        return pd.DataFrame(columns=['ID', 'Name', 'note_predite'])  # Pas d'éval possible
+
+    # Prédit uniquement sur ces livres
+    pred_dict = {
+        'ID': [user_id] * len(test_items),
+        'Name': [],
+        'note_predite': []
+    }
+    
+    for item in test_items:
+        pred = model.predict(uid=user_id, iid=item)
+        pred_dict['Name'].append(item)
+        pred_dict['note_predite'].append(pred.est)
+
+    pred_data = pd.DataFrame(pred_dict).sort_values('note_predite', ascending=False)
+    return pred_data.head(k)

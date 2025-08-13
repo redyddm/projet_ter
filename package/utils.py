@@ -20,10 +20,18 @@ def save_df_to_pickle(df, path):
     df.to_pickle(path)
     
 def nettoyage_word2vec(text):
+    if isinstance(text, list):
+        return [nettoyage_word2vec(t) for t in text]
+
     if isinstance(text, str):
         text = text.lower()
         text = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8")
-        return re.sub("[^a-z0-9 ]", "", text)
+        # remplacer tout ce qui n'est pas [a-z0-9] par un espace
+        text = re.sub("[^a-z0-9]", " ", text)
+        # puis réduire les espaces multiples à un seul espace
+        text = re.sub("\s+", " ", text).strip()
+        return text
+    
     return ""
 
 def nettoyage_texte(text):
@@ -32,6 +40,9 @@ def nettoyage_texte(text):
     return ""
 
 def nettoyage_leger(text):
+    if isinstance(text, list):
+        return [nettoyage_leger(t) for t in text]
+    
     if isinstance(text, str):
         text = re.sub(r"<[^>]+>", "", text)
         text = re.sub(r"[\n\r\t]", " ", text)
