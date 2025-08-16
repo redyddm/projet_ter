@@ -1,5 +1,5 @@
 import pandas as pd
-from iads.io import save_df_to_csv, save_df_to_pickle
+from reco_books.recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle
 from loaders.load_collaborative import load_books
 
 def rename_ratings_columns(ratings):

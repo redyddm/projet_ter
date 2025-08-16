@@ -5,7 +5,7 @@ import typer
 
 from loaders import load_collaborative
 from dataset import build_collaborative_dataset
-from iads.io import save_df_to_csv, save_df_to_pickle
+from reco_books.recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle
 from config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
 app = typer.Typer()
