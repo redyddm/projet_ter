@@ -16,7 +16,7 @@ app = typer.Typer()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
     features_path: Path = PROCESSED_DATA_DIR / "features_w2v.pkl",
-    model_path: Path = MODELS_DIR / "word2vec_model.pkl",
+    model_path: Path = MODELS_DIR / "word2vec.model",
     # -----------------------------------------
 ):
     logger.info("Loading the features...")
@@ -25,18 +25,23 @@ def main(
 
     logger.info("Creating a Word2Vec model...")
 
-    w2v=gensim.models.Word2Vec(sentences=text_fusion, vector_size=150, window=5, workers=14, min_count=2)
+    w2v=gensim.models.Word2Vec(vector_size=150, window=5, workers=10, min_count=2)
 
+    logger.info("Building the vocabulary...")
 
-    logger.info("Training some model...")
+    w2v.build_vocab(content_df['text_clean'])
+
+    logger.info("Training the Word2Vec model...")
+
+    w2v.train(content_df['text_clean'], epochs=w2v.epochs, total_examples=w2v.corpus_count)
     
-    svd.fit(trainset)
-
     logger.success("Modeling training complete.")
 
-    logger.success(f"Saving the SVD model to {model_path}")
-    with open(model_path, 'wb') as f:
-        pickle.dump(svd, f)
+    logger.info(f"Saving the Word2Vec model to {model_path}")
+    
+    w2v.save(str(model_path))
+
+    logger.success("Word2Vec model saved.")
 
 if __name__ == "__main__":
     app()
