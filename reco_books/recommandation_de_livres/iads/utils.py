@@ -10,3 +10,4 @@ def save_df_to_csv(df: pd.DataFrame, filepath: str, index: bool = False):
 def save_df_to_pickle(df: pd.DataFrame, filepath: str):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     df.to_pickle(filepath)
+
