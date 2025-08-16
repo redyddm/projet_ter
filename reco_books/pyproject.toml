@@ -1,0 +1,32 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "recommandation_de_livres"
+version = "0.0.1"
+description = "Un syst\u00e8me de recommandation de livres"
+authors = [
+  { name = "Redouane Bouras" },
+]
+
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    
+]
+requires-python = "==3.10.11"
+
+
+[tool.ruff]
+line-length = 99
+src = ["recommandation_de_livres"]
+include = ["pyproject.toml", "recommandation_de_livres/**/*.py"]
+
+[tool.ruff.lint]
+extend-select = ["I"]  # Add import sorting
+
+[tool.ruff.lint.isort]
+known-first-party = ["recommandation_de_livres"]
+force-sort-within-sections = true
+
