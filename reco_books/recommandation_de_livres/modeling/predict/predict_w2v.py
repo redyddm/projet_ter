@@ -28,7 +28,7 @@ def main(
     content_df = pd.read_pickle(content_path)
 
     logger.info("Loading Word2Vec model...")
-    model = gensim.Word2Vec.load(str(model_w2v_path))
+    model = gensim.models.Word2Vec.load(str(model_w2v_path))
 
     logger.info("Chargement des embeddings pré-calculés...")
     embeddings = np.load(embeddings_w2v_path)

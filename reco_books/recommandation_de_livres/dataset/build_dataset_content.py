@@ -1,4 +1,4 @@
-from preprocessing.preprocess_content import *
+from recommandation_de_livres.preprocessing.preprocess_content import *
 
 def build_content_dataset(books, authors, categories):
     # Sélection et renommage des colonnes
@@ -9,5 +9,8 @@ def build_content_dataset(books, authors, categories):
 
     # Mapping IDs → noms et conversion en string
     books = map_ids_to_names(books, authors, categories)
+
+    # Suppression des titres en doublon
+    books = remove_duplicates(books)
 
     return books

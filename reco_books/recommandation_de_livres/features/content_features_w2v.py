@@ -8,6 +8,7 @@ import typer
 
 from recommandation_de_livres.config import PROCESSED_DATA_DIR
 from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle
+from recommandation_de_livres.iads.text_cleaning import nettoyage_texte
 
 app = typer.Typer()
 

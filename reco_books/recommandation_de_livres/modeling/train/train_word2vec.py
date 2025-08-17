@@ -9,7 +9,7 @@ import pickle
 import gensim
 
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
-from reco_books.recommandation_de_livres.iads.content_utils import get_text_vector
+from recommandation_de_livres.iads.content_utils import get_text_vector
 
 app = typer.Typer()
 
@@ -28,7 +28,7 @@ def main(
 
     logger.info("Creating a Word2Vec model...")
 
-    w2v=gensim.models.Word2Vec(vector_size=150, window=5, workers=10, min_count=2)
+    w2v=gensim.models.Word2Vec(vector_size=150, window=5, workers=10, min_count=1)
 
     logger.info("Building the vocabulary...")
 

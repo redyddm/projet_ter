@@ -3,10 +3,10 @@ from loguru import logger
 from tqdm import tqdm
 import typer
 
-from loaders import load_content
-from dataset import build_dataset_content
-from reco_books.recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle
-from config import PROCESSED_DATA_DIR, RAW_DATA_DIR
+from recommandation_de_livres.loaders import load_content
+from recommandation_de_livres.dataset import build_dataset_content
+from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle
+from recommandation_de_livres.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
 app = typer.Typer()
 

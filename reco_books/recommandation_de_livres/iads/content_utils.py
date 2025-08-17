@@ -21,21 +21,30 @@ def get_book_embedding(book_title, model):
     else:
         raise ValueError("Modèle non reconnu")
     return vec
-    
+
+def get_book_index(title, books):
+    index=np.where(books['title']==title)[0]
+    return index
+
 def recommandation_content_top_k(book_title, embeddings, model, books_df, k=5):
+    books_names=set(books_df['title'])
 
     # Embedding du livre donné
-    book_embedding=get_book_embedding(book_title, model)
+    if book_title in books_names:
+        book_index=get_book_index(book_title, books_df)
+        book_embedding=embeddings[book_index]
+        embeddings[book_index]=-1
 
+    else:
+        book_embedding=get_book_embedding(book_title, model)
+        
     # Calcul des similarités
     similarity = cosine_similarity(book_embedding, embeddings)[0]
 
     # Top k indices
     top_k_idx = np.argsort(similarity)[-k:][::-1]
-    top_k_scores = similarity[top_k_idx]
 
     # Extraire titres et auteurs
-    top_books = books_df.iloc[top_k_idx][['title', 'author']].copy()
-    top_books['score'] = top_k_scores
+    top_books = books_df.iloc[top_k_idx][['isbn', 'isbn13', 'title', 'authors']].copy()
 
     return top_books.reset_index(drop=True)

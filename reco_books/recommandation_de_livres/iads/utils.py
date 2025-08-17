@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import requests
 
 
 def save_df_to_csv(df: pd.DataFrame, filepath: str, index: bool = False):
@@ -11,3 +12,14 @@ def save_df_to_pickle(df: pd.DataFrame, filepath: str):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     df.to_pickle(filepath)
 
+def get_cover_url(isbn):
+    url = f"https://bookcover.longitood.com/bookcover/{isbn}"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("url")
+        else:
+            return None
+    except:
+        return None

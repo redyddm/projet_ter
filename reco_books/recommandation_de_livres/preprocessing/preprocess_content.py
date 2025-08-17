@@ -1,5 +1,9 @@
 import ast
 from tqdm import tqdm
+import gensim
+import numpy as np
+
+from recommandation_de_livres.iads.text_cleaning import nettoyage_texte
 
 def str_to_list(s):
     return ast.literal_eval(s)
@@ -13,7 +17,7 @@ def select_and_rename_books_columns(books):
     """
     Sélectionne les colonnes importantes et renomme isbn10 en isbn.
     """
-    books_df = books[['isbn10', 'title', 'authors', 'categories', 'description', 
+    books_df = books[['isbn10', 'isbn13', 'title', 'authors', 'categories', 'description', 
                       'lang', 'url', 'image-url', 'format', 'rating-avg']].copy()
     books_df.rename(columns={'isbn10': 'isbn'}, inplace=True)
     return books_df
@@ -23,8 +27,17 @@ def filter_books_basic(books):
     books = books[(books['authors'] != '[]') & (books['categories'] != '[]')]
     books = books[books['description'].notna() & (books['description'] != '[]')]
     books = books[books['lang'] == 'en']
-    books = books.drop_duplicates(subset='title')
+
+    return books
+
+def remove_duplicates(books):
+    
+    tqdm.pandas(desc="Nettoyage des textes")
+    books['title_clean']=books['title'].progress_apply(nettoyage_texte)
+    books = books.drop_duplicates(subset='title_clean')
+    books = books.drop(columns='title_clean')
     books = books.reset_index(drop=True)
+
     return books
 
 def map_ids_to_names(books, authors, categories):
