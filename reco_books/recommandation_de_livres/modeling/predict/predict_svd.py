@@ -6,7 +6,7 @@ from loguru import logger
 from tqdm import tqdm
 
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
-from recommandation_de_livres.modeling.svd_utils import recommandation_collaborative_top_k, recommandation_collaborative_top_k_diverse
+from reco_books.recommandation_de_livres.iads.svd_utils import recommandation_collaborative_top_k, recommandation_collaborative_top_k_diverse
 
 app = typer.Typer()
 
@@ -17,13 +17,13 @@ def main(
     ratings_path: Path = PROCESSED_DATA_DIR / "collaborative_dataset.csv",
     top_k: int = 5
 ):
+    
+    logger.info("Loading ratings and books data...")
+    ratings = pd.read_csv(ratings_path)
 
     logger.info(f"Loading trained SVD model from {model_path}")
     with open(model_path, 'rb') as f:
         model = pickle.load(f)
-    
-    logger.info("Loading ratings and books data...")
-    ratings = pd.read_csv(ratings_path)
 
     if user_id not in ratings['user_id'].unique():
         logger.warning(f"User {user_id} not found in ratings dataset.")

@@ -3,11 +3,13 @@ from pathlib import Path
 from loguru import logger
 from tqdm import tqdm
 import pandas as pd
+import numpy as np
 import typer
 import pickle
 import gensim
 
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
+from reco_books.recommandation_de_livres.iads.content_utils import get_text_vector
 
 app = typer.Typer()
 
@@ -17,6 +19,7 @@ def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
     features_path: Path = PROCESSED_DATA_DIR / "features_w2v.pkl",
     model_path: Path = MODELS_DIR / "word2vec.model",
+    embeddings_path = PROCESSED_DATA_DIR / "embeddings_w2v.npy",
     # -----------------------------------------
 ):
     logger.info("Loading the features...")
@@ -42,6 +45,15 @@ def main(
     w2v.save(str(model_path))
 
     logger.success("Word2Vec model saved.")
+
+    logger.info("Calculate the embeddings...")
+
+    book_embeddings = np.vstack([get_text_vector(t, w2v) for t in tqdm(content_df['text_clean'], desc="Calcul embeddings")])
+
+    logger.info(f"Saving the embeddings to {embeddings_path}")
+    np.save(embeddings_path, book_embeddings)
+
+    logger.success("Embeddings saved.")
 
 if __name__ == "__main__":
     app()
