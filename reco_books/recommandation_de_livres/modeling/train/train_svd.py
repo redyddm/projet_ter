@@ -29,13 +29,13 @@ def main(
 
     logger.info("Creating a SVD model...")
 
-    n_factors = input("Nombre de facteurs latents pour SVD [20] : ")
-    n_factors = int(n_factors) if n_factors.strip() != "" else 20
+    n_factors = input("Nombre de facteurs latents pour SVD [50] : ")
+    n_factors = int(n_factors) if n_factors.strip() != "" else 50
 
     n_epochs = input("Nombre d'epochs [50] : ")
     n_epochs = int(n_epochs) if n_epochs.strip() != "" else 50
 
-    lr_all = input("Learning rate [0.005] : ")
+    lr_all = input("Learning rate [0.002] : ")
     lr_all = float(lr_all) if lr_all.strip() != "" else 0.002
 
     reg_all = input("Régularisation [0.02] : ")
