@@ -28,10 +28,10 @@ def main(
     logger.info('Fusionning the texts for Word2Vec...')
 
     content_df['text_for_w2v'] = (
-        content_df['title'].fillna('') + ' ' +
-        content_df['categories'].fillna('') + ' ' +
-        content_df['authors'].fillna('') + ' ' +
-        content_df['description'].fillna('')
+        "<title> " + content_df['title'].fillna('') + " " +
+        "<authors> " + content_df['authors'].fillna('') + " " +
+        "<categories> " + content_df['categories'].fillna('') + " " +
+        "<description> " + content_df['description'].fillna('')
     )
 
     logger.info("Cleaning and tokenizing the text...")

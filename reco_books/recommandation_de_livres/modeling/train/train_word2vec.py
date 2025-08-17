@@ -28,7 +28,7 @@ def main(
 
     logger.info("Creating a Word2Vec model...")
 
-    w2v=gensim.models.Word2Vec(vector_size=150, window=5, workers=10, min_count=1)
+    w2v=gensim.models.Word2Vec(vector_size=150, window=5, workers=10, min_count=5)
 
     logger.info("Building the vocabulary...")
 
