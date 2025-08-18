@@ -43,6 +43,12 @@ def get_book(isbn, books):
         return match.iloc[0]['title']  # retourne une chaîne
     return 'Titre inconnu'
 
+def get_book_cover(isbn, books):
+    match = books[books['ISBN'] == isbn]
+    if not match.empty:
+        return match.iloc[0]['Image-URL-L']  # retourne une chaîne
+    return 'Couverture non trouvée'
+
 
 def get_books_list(isbn_list, books):
 
@@ -88,6 +94,8 @@ def predict_unrated_books(user_id, model, non_note):
 
     pred_data = pd.DataFrame(pred_dict).sort_values('note_predite',
                                                      ascending = False)
+    
+    pred_data = pred_data.drop(columns='user_id')
 
     return pred_data
 
@@ -101,31 +109,6 @@ def recommandation_collaborative_top_k(k, user_id, model, ratings):
 
     top_k['title'] = top_k['ISBN'].apply(get_book, books=ratings)
 
+    top_k['cover'] = top_k['ISBN'].apply(get_book_cover, books=ratings)
+
     return top_k
-
-def recommandation_collaborative_top_k_diverse(k, user_id, model, ratings, alpha=0.5):
-    """
-    Top-k recommandations pour un utilisateur avec ajustement pour favoriser les livres moins populaires.
-    alpha : 0 = uniquement prédiction SVD
-            1 = uniquement rareté/popularité inverse
-    """
-    # --- Livres non notés ---
-    non_note = get_unrated_item(user_id, ratings)
-
-    # --- Prédictions sur ces livres ---
-    pred_ratings = predict_unrated_books(user_id, model, non_note)
-
-    # --- Popularité des livres ---
-    book_counts = ratings['ISBN'].value_counts()
-    pred_ratings['pop_score'] = pred_ratings['ISBN'].map(lambda x: 1 / book_counts.get(x, 1))
-
-    # --- Ajuster la note prédite ---
-    pred_ratings['adjusted_rating'] = (1 - alpha) * pred_ratings['note_predite'] + alpha * pred_ratings['pop_score']
-
-    # --- Trier et récupérer top-k ---
-    top_k = pred_ratings.sort_values('adjusted_rating', ascending=False).head(k).copy()
-
-    # --- Ajouter les titres ---
-    top_k['title'] = top_k['ISBN'].apply(get_book, books=ratings)
-
-    return top_k.reset_index(drop=True)

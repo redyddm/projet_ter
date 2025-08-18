@@ -6,7 +6,7 @@ from loguru import logger
 from tqdm import tqdm
 
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
-from reco_books.recommandation_de_livres.iads.svd_utils import recommandation_collaborative_top_k, recommandation_collaborative_top_k_diverse
+from reco_books.recommandation_de_livres.iads.svd_utils import recommandation_collaborative_top_k
 
 app = typer.Typer()
 
