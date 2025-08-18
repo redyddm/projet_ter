@@ -65,3 +65,7 @@ def map_ids_to_names(books, authors, categories):
 
     books = books.reset_index(drop=True)
     return books
+
+def add_clean_title(books):
+    books['title_clean'] = books['title'].apply(nettoyage_texte)
+    return books

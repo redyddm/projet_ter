@@ -13,4 +13,8 @@ def build_content_dataset(books, authors, categories):
     # Suppression des titres en doublon
     books = remove_duplicates(books)
 
+    # Ajout des titres nettoyés
+
+    books = add_clean_title(books)
+
     return books
