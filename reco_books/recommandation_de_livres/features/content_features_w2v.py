@@ -25,18 +25,10 @@ def main(
 
     content_df = pd.read_pickle(input_path)
 
-    logger.info('Fusionning the texts for Word2Vec...')
-
-    content_df['text_for_w2v'] = (
-        "<title> " + content_df['title'].fillna('') + " " +
-        "<authors> " + content_df['authors'].fillna('') + " " +
-        "<description> " + content_df['description'].fillna('')
-    )
-
     logger.info("Cleaning and tokenizing the text...")
 
     tqdm.pandas(desc='Nettoyage des textes')
-    content_df['text_clean'] = content_df['text_for_w2v'].progress_apply(gensim.utils.simple_preprocess)
+    content_df['text_clean'] = content_df['description'].progress_apply(gensim.utils.simple_preprocess)
 
     logger.info("Creating the features dataframe...")
 

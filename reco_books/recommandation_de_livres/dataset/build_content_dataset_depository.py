@@ -1,4 +1,4 @@
-from reco_books.recommandation_de_livres.preprocessing.preprocess_content_depository import *
+from recommandation_de_livres.preprocessing.preprocess_content_depository import *
 
 def build_content_dataset(books, authors, categories):
     # Sélection et renommage des colonnes

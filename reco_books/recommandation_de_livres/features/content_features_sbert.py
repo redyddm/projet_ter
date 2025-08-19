@@ -25,18 +25,10 @@ def main(
 
     content_df = pd.read_pickle(input_path)
 
-    logger.info('Fusionning the texts for Sentence-BERT...')
-
-    content_df['text_for_sbert'] = (
-    "Title: " + content_df['title'].fillna('') + " | " +
-    "Authors: " + content_df['authors'].fillna('') + " | " +
-    "Description: " + content_df['description'].fillna('')
-    )
-
     logger.info("Cleaning and tokenizing the text...")
 
     tqdm.pandas(desc='Nettoyage des textes')
-    content_df['text_clean'] = content_df['text_for_sbert'].progress_apply(nettoyage_leger)
+    content_df['text_clean'] = content_df['description'].progress_apply(nettoyage_leger)
 
     logger.info("Creating the features dataframe...")
 

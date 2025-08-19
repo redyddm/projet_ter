@@ -3,7 +3,7 @@ from tqdm import tqdm
 import gensim
 import numpy as np
 
-from recommandation_de_livres.iads.text_cleaning import nettoyage_texte
+from recommandation_de_livres.iads.text_cleaning import nettoyage_texte, nettoyage_avance
 
 def str_to_list(s):
     return ast.literal_eval(s)
@@ -33,7 +33,7 @@ def filter_books_basic(books):
 def remove_duplicates(books):
     
     tqdm.pandas(desc="Nettoyage des textes")
-    books['title_clean']=books['title'].progress_apply(nettoyage_texte)
+    books['title_clean']=books['title'].progress_apply(nettoyage_avance)
     books = books.drop_duplicates(subset='title_clean')
     books = books.drop(columns='title_clean')
     books = books.reset_index(drop=True)
@@ -67,5 +67,5 @@ def map_ids_to_names(books, authors, categories):
     return books
 
 def add_clean_title(books):
-    books['title_clean'] = books['title'].apply(nettoyage_texte)
+    books['title_clean'] = books['title'].apply(nettoyage_avance)
     return books

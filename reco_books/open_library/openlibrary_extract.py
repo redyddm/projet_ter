@@ -2,7 +2,9 @@ import json
 import psycopg2
 from tqdm import tqdm
 import re
-from package.ol_up import user, password
+
+user='postgres'
+password='redsql'
 
 def get_key_books_list(isbn_list):
     """ Renvoie une liste de key de la table 'editions' correspondant aux isbn donnés.
