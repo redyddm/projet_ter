@@ -4,8 +4,8 @@ from pathlib import Path
 def load_books(path: Path):
     return pd.read_csv(path)
 
-def load_ratings(path: Path):
+def load_authors(path: Path):
     return pd.read_csv(path)
 
-def load_users(path: Path):
+def load_categories(path: Path):
     return pd.read_csv(path)

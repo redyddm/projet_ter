@@ -3,6 +3,8 @@ from sentence_transformers import SentenceTransformer
 
 import numpy as np
 import gensim
+import spacy
+
 
 
 def get_text_vector(text, model):
@@ -44,11 +46,13 @@ def recommandation_content_top_k(book_title, embeddings, model, books_df, k=5):
     top_k_idx = np.argsort(similarity)[-k*2:][::-1]  # prendre un peu plus pour être sûr
     top_k_idx = [i for i in top_k_idx if i != book_index][:k]
 
-
     # Extraire titres et auteurs
-    top_books = books_df.iloc[top_k_idx][['isbn', 'isbn13', 'title', 'authors']].copy()
+    if 'Image-URL-L' in books_df.columns:
+        top_books = books_df.iloc[top_k_idx][['isbn', 'isbn13', 'title', 'authors', 'Image-URL-L']].copy()
+    else:
+        top_books = books_df.iloc[top_k_idx][['isbn', 'isbn13', 'title', 'authors']].copy()
 
-    return top_books.reset_index(drop=True)
+    return top_books
 
 # Pour recherche de titres avec tfidf
 def suggest_titles(query, tfidf, tfidf_matrix, books, k=5):
@@ -57,3 +61,4 @@ def suggest_titles(query, tfidf, tfidf_matrix, books, k=5):
     similarity = cosine_similarity(vec, tfidf_matrix).flatten()
     top_idx = similarity.argsort()[-k:][::-1]
     return books.iloc[top_idx][['title','authors']]
+

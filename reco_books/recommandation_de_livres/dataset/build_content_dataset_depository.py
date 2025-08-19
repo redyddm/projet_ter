@@ -1,4 +1,4 @@
-from recommandation_de_livres.preprocessing.preprocess_content import *
+from reco_books.recommandation_de_livres.preprocessing.preprocess_content_depository import *
 
 def build_content_dataset(books, authors, categories):
     # Sélection et renommage des colonnes
@@ -12,9 +12,5 @@ def build_content_dataset(books, authors, categories):
 
     # Suppression des titres en doublon
     books = remove_duplicates(books)
-
-    # Ajout des titres nettoyés
-
-    books = add_clean_title(books)
 
     return books

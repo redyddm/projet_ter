@@ -1,6 +1,7 @@
 import re
 import ast
 import unicodedata
+import numpy as np
 
 
 def save_df_to_csv(df, path):
@@ -56,3 +57,22 @@ def str_list_to_text(s):
     else :
         parsed = ast.literal_eval(s)
         return " ".join(parsed)
+
+
+def get_text_vector(tokens, model):
+    """ Fais la moyenne des embeddings pour avoir un vecteur représentant un livre.
+        Arguments :
+            tokens str[] : liste de mots tokenisés
+            model : modèle Word2Vec utilisé
+    """
+    vectors = [model.wv[word] for word in tokens if word in model.wv]
+    if vectors:
+        return np.mean(vectors, axis=0)
+    else:
+        return np.zeros(model.vector_size)
+    
+def sentence_vector(sentence, model):
+    vectors = [model[word] for word in sentence if word in model]
+    if not vectors:
+        return np.zeros(model.vector_size)
+    return np.mean(vectors, axis=0)

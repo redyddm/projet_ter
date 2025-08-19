@@ -30,7 +30,6 @@ def main(
     content_df['text_for_w2v'] = (
         "<title> " + content_df['title'].fillna('') + " " +
         "<authors> " + content_df['authors'].fillna('') + " " +
-        "<categories> " + content_df['categories'].fillna('') + " " +
         "<description> " + content_df['description'].fillna('')
     )
 

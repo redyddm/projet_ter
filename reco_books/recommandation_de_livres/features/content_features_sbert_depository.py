@@ -16,9 +16,9 @@ app = typer.Typer()
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    input_path: Path = PROCESSED_DATA_DIR / "content_dataset.pkl",
-    output_path_csv: Path = PROCESSED_DATA_DIR / "features_sbert.csv",
-    output_path_pkl: Path = PROCESSED_DATA_DIR / "features_sbert.pkl",
+    input_path: Path = PROCESSED_DATA_DIR / "content_dataset_depository.pkl",
+    output_path_csv: Path = PROCESSED_DATA_DIR / "features_sbert_depository.csv",
+    output_path_pkl: Path = PROCESSED_DATA_DIR / "features_sbert_depository.pkl",
     # -----------------------------------------
 ):
     logger.info('Loading content dataset...')
@@ -29,6 +29,7 @@ def main(
 
     content_df['text_for_sbert'] = (
     "Title: " + content_df['title'].fillna('') + " | " +
+    "Categories: " + content_df['categories'].fillna('') + " | " +
     "Authors: " + content_df['authors'].fillna('') + " | " +
     "Description: " + content_df['description'].fillna('')
     )

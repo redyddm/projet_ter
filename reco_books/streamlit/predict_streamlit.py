@@ -6,6 +6,10 @@ from sentence_transformers import SentenceTransformer
 import requests
 import pickle
 from sklearn.metrics.pairwise import cosine_similarity
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from recommandation_de_livres.config import PROCESSED_DATA_DIR, MODELS_DIR
 from recommandation_de_livres.iads.content_utils import recommandation_content_top_k, suggest_titles
@@ -97,23 +101,27 @@ elif model_choice == "SVD":
 # -------------------------
 if st.button("Rechercher"):
     top_books = None
-    images = []
 
     if model_choice in ["Word2Vec", "SBERT"] and selected_title:
         top_books = recommandation_content_top_k(selected_title, embeddings, model, books, top_k)
         # Préparer les images
-        for _, row in top_books.iterrows():
-            isbn = row.get('isbn13') or row.get('isbn')
-            cover_url = f"https://bookcover.longitood.com/bookcover/{isbn}"
-            try:
-                response = requests.get(cover_url)
-                if response.status_code == 200:
-                    data = response.json()
-                    images.append(data.get("url"))
-                else:
+        if 'Image-URL-L' in top_books.columns:
+            images = top_books['Image-URL-L'].tolist() if 'Image-URL-L' in top_books.columns else [None]*len(top_books)
+            top_books = top_books.drop(columns='Image-URL-L', errors='ignore')
+        else:
+            images = []
+            for _, row in top_books.iterrows():
+                isbn = row.get('isbn13') or row.get('isbn')
+                cover_url = f"https://bookcover.longitood.com/bookcover/{isbn}"
+                try:
+                    response = requests.get(cover_url)
+                    if response.status_code == 200:
+                        data = response.json()
+                        images.append(data.get("url"))
+                    else:
+                        images.append(None)
+                except:
                     images.append(None)
-            except:
-                images.append(None)
 
     elif model_choice == "SVD" and user_id is not None:
         top_books = recommandation_collaborative_top_k(top_k, user_id, svd_model, ratings)
