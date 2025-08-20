@@ -2,6 +2,7 @@ import ast
 from tqdm import tqdm
 import gensim
 import numpy as np
+import pandas as pd
 
 from open_library.openlibrary_extract import *
 from recommandation_de_livres.iads.text_cleaning import nettoyage_texte, nettoyage_avance
@@ -42,14 +43,23 @@ def map_author_names(books_df, authors_df):
     author_map = dict(zip(authors_df['author_id'].astype(str), authors_df['name']))
 
     def extract_names(author_list):
+    # Si c'est une chaîne → essayer de parser
+        if isinstance(author_list, str):
+            try:
+                author_list = ast.literal_eval(author_list)
+            except Exception:
+                return ""
         if not isinstance(author_list, list):
             return ""
+        
         names = []
         for a in author_list:
             author_id = str(a.get("author_id"))
-            if author_id in author_map:
-                names.append(author_map[author_id])
+            name = author_map.get(author_id)
+            if pd.notna(name):
+                names.append(str(name))
         return ", ".join(names)
+
 
     tqdm.pandas(desc="Mapping des auteurs")
     books_df["authors"] = books_df["authors"].progress_apply(extract_names)

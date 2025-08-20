@@ -9,4 +9,8 @@ def build_collaborative_dataset(books, ratings):
 
     collaborative_dataset = add_book_metadata(ratings_explicit, books)
 
+    # On crée des id plus simples pour l'appli
+    cats = collaborative_dataset['user_id'].astype("category")
+    collaborative_dataset['user_index'] = cats.cat.codes + 1  
+
     return collaborative_dataset

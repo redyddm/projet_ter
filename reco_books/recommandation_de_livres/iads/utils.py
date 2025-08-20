@@ -23,3 +23,11 @@ def get_cover_url(isbn):
             return None
     except:
         return None
+    
+def stars(rating: float, max_stars: int = 5) -> str:
+    """Retourne une chaîne d'étoiles ⭐ pour une note donnée."""
+    full_stars = int(rating)
+    half_star = rating - full_stars >= 0.5
+    empty_stars = max_stars - full_stars - int(half_star)
+
+    return "⭐" * full_stars + ("✨" if half_star else "") + "☆" * empty_stars

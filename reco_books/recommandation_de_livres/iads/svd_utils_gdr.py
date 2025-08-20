@@ -36,8 +36,17 @@ def get_index(title, books):
     book_id = books[books['title'] == closest_titles[0]].index[0]
     
     return book_id
+
+def get_book_infos(book_id, books):
+    match = books[books['book_id'] == book_id]
+    if not match.empty:
+        return match.iloc[0].to_dict()  # retourne un dict avec toutes les infos
+    # Si non trouvé, retourne un dict vide mais avec la clé book_id
+    return {'book_id': book_id, 'title': 'Titre inconnu', 'authors': 'Inconnu', 'image_url': '', 
+            'publisher': 'Inconnu', 'year': 'Inconnu', 'description': 'Pas de description'}
+
     
-def get_book(isbn, books):
+def get_book_title(isbn, books):
     match = books[books['book_id'] == isbn]
     if not match.empty:
         return match.iloc[0]['title']  # retourne une chaîne
@@ -76,7 +85,7 @@ def recommandation_collaborative(user_id, model, ratings, books, note=4):
     for book_id in non_note:
         rating = predict_rating(user_id, book_id, model)
         if rating > note:
-            return get_book(book_id, books)
+            return get_book_title(book_id, books)
         
 def predict_unrated_books(user_id, model, non_note):
 
@@ -100,15 +109,15 @@ def predict_unrated_books(user_id, model, non_note):
     return pred_data
 
 def recommandation_collaborative_top_k_gdr(k, user_id, model, ratings):
-
-    non_note=get_unrated_item(user_id, ratings)
-
-    pred_ratings=predict_unrated_books(user_id, model, non_note)
-
+    non_note = get_unrated_item(user_id, ratings)
+    pred_ratings = predict_unrated_books(user_id, model, non_note)
     top_k = pred_ratings.head(k).copy()
 
-    top_k['title'] = top_k['book_id'].apply(get_book, books=ratings)
-
-    top_k['cover'] = top_k['book_id'].apply(get_book_cover, books=ratings)
-
+    # Récupérer toutes les infos du livre
+    book_infos = top_k['book_id'].apply(lambda x: get_book_infos(x, books=ratings))
+    book_infos_df = pd.DataFrame(list(book_infos))
+    
+    # Merge sur book_id
+    top_k = top_k.merge(book_infos_df, on='book_id', how='left')
+    
     return top_k

@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import typer
 import gensim
+import multiprocessing as mp
 
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
 from recommandation_de_livres.iads.content_utils import get_text_vector
@@ -30,10 +31,10 @@ def main(
     features_path: Path = PROCESSED_DATA_DIR / DIR / "features_w2v.pkl",
     model_path: Path = MODELS_DIR / DIR / "word2vec.model",
     embeddings_path: Path = PROCESSED_DATA_DIR / DIR / "embeddings_w2v.npy",
-    vector_size: int = 300,
+    vector_size: int = 200,
     window: int = 10,
     min_count: int = 2,
-    epochs: int = 15,
+    epochs: int = 5,
     # -----------------------------------------
 ):
     logger.info("Loading the features...")
@@ -48,8 +49,8 @@ def main(
         vector_size=vector_size,
         window=window,
         min_count=min_count,
-        workers=10,
-        sg=0
+        workers=mp.cpu_count(),
+        sg=1
     )
 
     logger.info("Building the vocabulary...")
