@@ -41,14 +41,21 @@ def main(
     tqdm.pandas(desc='Nettoyage des textes')
 
     content_df['text_combined'] = content_df.progress_apply(lambda row: combine_text(row, choice), axis=1)
-    content_df['text_clean'] = content_df['text_combined'].progress_apply(gensim.utils.simple_preprocess)
+    content_df['text_clean'] = content_df['text_combined'].progress_apply(nettoyage_leger)
 
     logger.info("Creating the features dataframe...")
 
-    features_df = pd.DataFrame({
-        'isbn': content_df['isbn'],
+    if choice == "3":
+        features_df = pd.DataFrame({
+        'book_id': content_df['book_id'],
         'text_clean': content_df['text_clean']
-    })
+        })
+        
+    else:
+        features_df = pd.DataFrame({
+            'isbn': content_df['isbn'],
+            'text_clean': content_df['text_clean']
+        })
 
     logger.info("Saving the features...")
 

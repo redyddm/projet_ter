@@ -49,10 +49,17 @@ def main(
 
     logger.info("Creating the features dataframe...")
 
-    features_df = pd.DataFrame({
-        'isbn': content_df['isbn'],
+    if choice =="3":
+        features_df = pd.DataFrame({
+        'book_id': content_df['book_id'],
         'text_clean': content_df['text_clean']
-    })
+        })
+        
+    else:
+        features_df = pd.DataFrame({
+            'isbn': content_df['isbn'],
+            'text_clean': content_df['text_clean']
+        })
 
     logger.info("Saving the features...")
 
