@@ -13,16 +13,27 @@ from recommandation_de_livres.iads.progress_w2v import TqdmCorpus, EpochLogger
 
 app = typer.Typer()
 
+choice = input("Choix du dataset [3] : Recommender (1), Depository (2), Goodreads (3) ") or "3"
+
+if choice == "1":
+    DIR = "recommender"
+elif choice == "2":
+    DIR = "depository"
+elif choice == "3":
+    DIR = "goodreads"
+else:
+    raise ValueError("Choix invalide (1, 2 ou 3 attendu)")
+
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    features_path: Path = PROCESSED_DATA_DIR / "features_w2v.pkl",
-    model_path: Path = MODELS_DIR / "word2vec.model",
-    embeddings_path: Path = PROCESSED_DATA_DIR / "embeddings_w2v.npy",
+    features_path: Path = PROCESSED_DATA_DIR / DIR / "features_w2v.pkl",
+    model_path: Path = MODELS_DIR / DIR / "word2vec.model",
+    embeddings_path: Path = PROCESSED_DATA_DIR / DIR / "embeddings_w2v.npy",
     vector_size: int = 300,
     window: int = 10,
     min_count: int = 2,
-    epochs: int = 5,
+    epochs: int = 15,
     # -----------------------------------------
 ):
     logger.info("Loading the features...")

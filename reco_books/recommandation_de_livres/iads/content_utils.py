@@ -60,3 +60,19 @@ def suggest_titles(query, tfidf, tfidf_matrix, books, k=5):
     top_idx = similarity.argsort()[-k:][::-1]
     return books.iloc[top_idx][['title','authors']]
 
+def combine_text(row, choice):
+    # Concaténer description + title + categories (converties en string si nécessaire)
+    if choice =="1":
+        parts = [
+            str(row.get('title', '')),
+            str(row.get('description', ''))
+        ]
+        return ' '.join(parts)
+    
+    elif choice =="2" or choice=="3":
+        parts = [
+            str(row.get('title', '')),
+            str(row.get('categories', '')),
+            str(row.get('description', ''))
+        ]
+        return ' '.join(parts)

@@ -12,13 +12,23 @@ from recommandation_de_livres.iads.text_cleaning import nettoyage_texte, nettoya
 
 app = typer.Typer()
 
+choice = input("Choix du dataset [3] : Recommender (1), Depository (2), Goodreads (3) ") or "3"
+
+if choice == "1":
+    DIR = "recommender"
+elif choice == "2":
+    DIR = "depository"
+elif choice == "3":
+    DIR = "goodreads"
+else:
+    raise ValueError("Choix invalide (1, 2 ou 3 attendu)")
 
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    input_path: Path = PROCESSED_DATA_DIR / "content_dataset.pkl",
-    output_path_csv: Path = PROCESSED_DATA_DIR / "features_tfidf.csv",
-    output_path_pkl: Path = PROCESSED_DATA_DIR / "features_tfidf.pkl",
+    input_path: Path = PROCESSED_DATA_DIR / DIR / "content_dataset.pkl",
+    output_path_csv: Path = PROCESSED_DATA_DIR / DIR / "features_tfidf.csv",
+    output_path_pkl: Path = PROCESSED_DATA_DIR / DIR / "features_tfidf.pkl",
     # -----------------------------------------
 ):
     logger.info('Loading content dataset...')

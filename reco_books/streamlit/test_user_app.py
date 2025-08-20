@@ -1,45 +1,72 @@
 import streamlit as st
 import pandas as pd
+import sys
+import os
 
-# Exemple de dataset (dans ton cas tu chargeras depuis ton pickle)
-books = pd.DataFrame([
-    {"title": "Harry Potter and the Chamber of Secrets", 
-     "author": "J.K. Rowling", 
-     "cover_url": "https://covers.openlibrary.org/b/isbn/0439064872-L.jpg",
-     "description": "Harry Potter's second year at Hogwarts..."},
-    {"title": "The Hobbit", 
-     "author": "J.R.R. Tolkien", 
-     "cover_url": "https://covers.openlibrary.org/b/isbn/0345339681-L.jpg",
-     "description": "Bilbo Baggins goes on an adventure..."},
-    {"title": "The Little Prince", 
-     "author": "Antoine de Saint-Exupéry", 
-     "cover_url": "https://covers.openlibrary.org/b/isbn/0156012197-L.jpg",
-     "description": "A story about a prince from another planet..."},
-])
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-st.title("📚 Ma Bibliothèque")
 
-# Nombre de colonnes (3 livres par ligne par ex.)
-cols_per_row = 3
+from recommandation_de_livres.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
+from recommandation_de_livres.preprocessing.preprocess_user_book import rename_columns_users
 
-# Itérer sur les livres par paquets
-for i in range(0, len(books), cols_per_row):
-    cols = st.columns(cols_per_row)
-    for col, (_, book) in zip(cols, books.iloc[i:i+cols_per_row].iterrows()):
-        with col:
-            st.image(book["cover_url"], width=150)
-            st.write(f"**{book['title']}**")
-            st.caption(f"✍️ {book['author']}")
-            
-            # Bouton voir détails
-            if st.button("Voir détails", key=book["title"]):
-                st.session_state["selected_book"] = book.to_dict()
 
-# Si un livre a été cliqué
-if "selected_book" in st.session_state:
-    book = st.session_state["selected_book"]
-    st.markdown("---")
-    st.subheader(book["title"])
-    st.caption(f"✍️ {book['author']}")
-    st.image(book["cover_url"], width=200)
-    st.write(book["description"])
+DIR = 'Recommender_dataset'
+
+user_ratings = pd.read_csv(PROCESSED_DATA_DIR / "user_book_dataset.csv")
+users = pd.read_csv(RAW_DATA_DIR / DIR / "Users.csv")
+users =  rename_columns_users(users)
+
+
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+    st.session_state["user_id"] = None
+
+if not st.session_state["logged_in"]:
+    user_id_input = st.number_input("Entrez votre user_id", min_value=int(users['user_id'].min()), 
+                                    max_value=int(users['user_id'].max()), step=1)
+
+    if st.button("Se connecter"):
+        if user_id_input in users['user_id']:
+            st.session_state["logged_in"] = True
+            st.session_state["user_id"] = user_id_input
+        else:
+            st.error("Utilisateur non trouvé")
+
+if st.session_state["logged_in"]:
+    st.sidebar.write(f"Connecté : user {st.session_state['user_id']}")
+    if st.sidebar.button("Se déconnecter"):
+        st.session_state["logged_in"] = False
+        st.session_state["user_id"] = None
+
+    # Filtrer les livres de l'utilisateur connecté
+    books = user_ratings[user_ratings["user_id"] == st.session_state["user_id"]].to_dict("records")
+
+    if books:
+        st.subheader("📚 Ma Bibliothèque")
+
+        # Grille d'affichage (3 colonnes)
+        cols = st.columns(3)
+        for i, book in enumerate(books):
+            col = cols[i % 3]
+            with col:
+                st.image(
+                    book.get("Image-URL-L", "https://via.placeholder.com/150"),
+                    width=120
+                )
+                st.markdown(f"**{book['title']}**")
+                st.caption(book['authors'])
+
+                # Détails en expander
+                with st.expander("📖 Voir détails"):
+                    #st.image(book.get("Image-URL-L", "https://via.placeholder.com/150"), width=150)
+                    st.write(f"**Auteur(s) :** {book.get('authors', 'Inconnu')}")
+                    st.write(f"**Éditeur :** {book.get('publisher', 'Inconnu')}")
+                    st.write(f"**Année :** {book.get('year', 'Inconnue')}")
+                    st.write(f"**ISBN :** {book.get('isbn', 'N/A')}")
+                    st.markdown("**Description :**")
+                    st.write(book.get("description", "Pas de description disponible."))
+
+    else:
+        st.subheader("📚 Ma Bibliothèque")
+        st.write("Aucun livre dans la bibliothèque")
+

@@ -1,6 +1,5 @@
 import pandas as pd
 from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle
-from recommandation_de_livres.loaders.load_collaborative import load_books
 
 def rename_ratings_columns(ratings):
     ratings = ratings.copy()
@@ -16,7 +15,6 @@ def preprocess_collaborative(ratings, path):
     # Séparer explicite / implicite
     ratings_explicit = ratings[ratings['rating'] != 0].copy()
     ratings_implicit = ratings[ratings['rating'] == 0].copy()
-
 
     save_df_to_csv(ratings_implicit, path / 'ratings_explicit.csv')
     save_df_to_pickle(ratings_implicit, path / 'ratings_explicit.pkl')

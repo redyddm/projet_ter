@@ -11,21 +11,35 @@ from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
 
 app = typer.Typer()
 
+choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2) ") or "2"
+
+if choice == "1":
+    DIR = "recommender"
+elif choice == "2":
+    DIR = "goodreads"
+else:
+    raise ValueError("Choix invalide (1 ou 2 attendu)")
 
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    features_path: Path = PROCESSED_DATA_DIR / "collaborative_dataset.csv",
-    model_path: Path = MODELS_DIR / "svd_model.pkl",
+    features_path: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.csv",
+    model_path: Path = MODELS_DIR / DIR / "svd_model.pkl",
     # -----------------------------------------
 ):
     logger.info("Loading the features...")
 
     collaborative_df = pd.read_csv(features_path)
 
-    reader = Reader(rating_scale=(1,10))
-    data = Dataset.load_from_df(collaborative_df[['user_id','ISBN','rating']], reader)
-    trainset = data.build_full_trainset()
+    if choice == "1":
+        reader = Reader(rating_scale=(1,10))
+        data = Dataset.load_from_df(collaborative_df[['user_id','ISBN','rating']], reader)
+        trainset = data.build_full_trainset()
+
+    elif choice == "2":
+        reader = Reader(rating_scale=(1,5))
+        data = Dataset.load_from_df(collaborative_df[['user_id','book_id','rating']], reader)
+        trainset = data.build_full_trainset()
 
     logger.info("Creating a SVD model...")
 
@@ -42,7 +56,6 @@ def main(
     reg_all = float(reg_all) if reg_all.strip() != "" else 0.02
 
     svd = SVD(n_factors=n_factors, n_epochs=n_epochs, lr_all=lr_all, reg_all=reg_all)
-
 
     logger.info("Training the SVD model...")
     

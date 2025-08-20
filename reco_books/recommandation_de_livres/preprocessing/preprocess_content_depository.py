@@ -5,6 +5,7 @@ import numpy as np
 
 from recommandation_de_livres.iads.text_cleaning import nettoyage_texte, nettoyage_avance
 
+
 def str_to_list(s):
     return ast.literal_eval(s)
 
@@ -41,30 +42,31 @@ def remove_duplicates(books):
     return books
 
 def map_ids_to_names(books, authors, categories):
-    """Mappe les IDs authors/categories vers leurs noms."""
+    """Mappe les IDs authors/categories vers leurs noms (rapide et robuste)."""
     
+    # Convertir les colonnes authors/categories en listes (si ce n'est pas déjà fait)
     books['authors'] = books['authors'].apply(str_to_list)
     books['categories'] = books['categories'].apply(str_to_list)
 
-    author_map = dict(zip(authors['author_id'], authors['author_name']))
+    # Création des dictionnaires ID → nom
+    author_map = dict(zip(authors['author_id'], authors['name']))
     category_map = dict(zip(categories['category_id'], categories['category_name']))
 
-    tqdm.pandas(desc="Récupération des noms des auteurs")
-    books['authors'] = books['authors'].progress_apply(lambda ids: [author_map[i] for i in ids])
+    tqdm.pandas(desc="Mapping auteurs")
+    books['authors'] = books['authors'].progress_apply(
+        lambda ids: ", ".join([author_map.get(i) for i in ids if i in author_map])
+    )
 
-    tqdm.pandas(desc="Récupération des noms des catégories")
-    books['categories'] = books['categories'].progress_apply(lambda ids: [category_map[i] for i in ids])
+    tqdm.pandas(desc="Mapping catégories")
+    books['categories'] = books['categories'].progress_apply(
+        lambda ids: ", ".join([category_map.get(i) for i in ids if i in category_map])
+    )
 
-    # Convertir en string
-    books['authors'] = books['authors'].apply(list_to_str)
-    books['categories'] = books['categories'].apply(list_to_str)
+    # Filtrage des lignes vides (sans auteurs ni catégories)
+    books = books[(books['authors'].str.len() > 0) & (books['categories'].str.len() > 0)]
 
-    # Filtrage des NaN restants 
-    books = books[books['authors'].notna() & books['authors'].apply(lambda x: len(x) > 0)]
-    books = books[books['categories'].notna() & books['categories'].apply(lambda x: len(x) > 0)]
-
-    books = books.reset_index(drop=True)
-    return books
+    # Réindexation propre
+    return books.reset_index(drop=True)
 
 def add_clean_title(books):
     books['title_clean'] = books['title'].apply(nettoyage_avance)

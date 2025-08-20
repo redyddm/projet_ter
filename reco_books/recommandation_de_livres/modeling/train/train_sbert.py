@@ -13,12 +13,23 @@ from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
 
 app = typer.Typer()
 
+choice = input("Choix du dataset [3] : Recommender (1), Depository (2), Goodreads (3) ") or "3"
+
+if choice == "1":
+    DIR = "recommender"
+elif choice == "2":
+    DIR = "depository"
+elif choice == "3":
+    DIR = "goodreads"
+else:
+    raise ValueError("Choix invalide (1, 2 ou 3 attendu)")
+
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    features_path: Path = PROCESSED_DATA_DIR / "features_sbert.pkl",
-    model_path: Path = MODELS_DIR / "sbert_model",
-    embeddings_path = PROCESSED_DATA_DIR / "embeddings_sbert.npy",
+    features_path: Path = PROCESSED_DATA_DIR / DIR / "features_sbert.pkl",
+    model_path: Path = MODELS_DIR / DIR / "sbert_model",
+    embeddings_path = PROCESSED_DATA_DIR / DIR / "embeddings_sbert.npy",
     # -----------------------------------------
 ):
     logger.info("Loading the features...")

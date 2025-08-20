@@ -15,14 +15,25 @@ from recommandation_de_livres.iads.content_utils import get_book_embedding
 
 app = typer.Typer()
 
+choice = input("Choix du dataset [3] : Recommender (1), Depository (2), Goodreads (3) ") or "3"
+
+if choice == "1":
+    DIR = "recommender"
+elif choice == "2":
+    DIR = "depository"
+elif choice == "3":
+    DIR = "goodreads"
+else:
+    raise ValueError("Choix invalide (1, 2 ou 3 attendu)")
+
 @app.command()
 
 def main(
     title: str = typer.Option("Harry Potter", prompt="Entrez le titre du livre", help="Titre du livre pour la recommandation"),
     top_k: int = typer.Option(5, prompt="Entrez le nombre de recommandations souhaité", help="Nombre de recommandations à afficher"),
-    model_w2v_path: Path = MODELS_DIR / "word2vec.model",
-    embeddings_w2v_path: Path = PROCESSED_DATA_DIR / "embeddings_w2v.npy",
-    content_path: Path = PROCESSED_DATA_DIR / "content_dataset.pkl",
+    model_w2v_path: Path = MODELS_DIR / DIR / "word2vec.model",
+    embeddings_w2v_path: Path = PROCESSED_DATA_DIR / DIR / "embeddings_w2v.npy",
+    content_path: Path = PROCESSED_DATA_DIR / DIR / "content_dataset.pkl",
 ):
     logger.info("Loading content data...")
     content_df = pd.read_pickle(content_path)
