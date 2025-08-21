@@ -8,6 +8,7 @@ from tqdm import tqdm
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
 from recommandation_de_livres.iads.svd_utils import recommandation_collaborative_top_k
 from recommandation_de_livres.iads.svd_utils_gdr import recommandation_collaborative_top_k_gdr
+from recommandation_de_livres.loaders.load_data import load_parquet
 
 app = typer.Typer()
 
@@ -24,12 +25,12 @@ else:
 def main(
     user_id: str,
     model_path: Path = MODELS_DIR / DIR / "svd_model.pkl",
-    ratings_path: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.csv",
+    ratings_path: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.parquet",
     top_k: int = 5
 ):
     
     logger.info("Loading ratings and books data...")
-    ratings = pd.read_csv(ratings_path)
+    ratings = load_parquet(ratings_path)
     ratings["user_id"] = ratings["user_id"].astype(str)
 
     logger.info(f"Loading trained SVD model from {model_path}")

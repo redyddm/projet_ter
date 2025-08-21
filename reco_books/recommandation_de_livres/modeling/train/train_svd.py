@@ -8,6 +8,7 @@ import typer
 import pickle
 
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
+from recommandation_de_livres.loaders.load_data import load_parquet
 
 app = typer.Typer()
 
@@ -23,13 +24,13 @@ else:
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    features_path: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.csv",
+    features_path: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.parquet",
     model_path: Path = MODELS_DIR / DIR / "svd_model.pkl",
     # -----------------------------------------
 ):
     logger.info("Loading the features...")
 
-    collaborative_df = pd.read_csv(features_path)
+    collaborative_df = load_parquet(features_path)
 
     if choice == "1":
         reader = Reader(rating_scale=(1,10))

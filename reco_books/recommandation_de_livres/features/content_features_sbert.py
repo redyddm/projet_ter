@@ -7,7 +7,8 @@ import gensim
 import typer
 
 from recommandation_de_livres.config import PROCESSED_DATA_DIR
-from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle
+from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_parquet
+from recommandation_de_livres.loaders.load_data import load_parquet
 from recommandation_de_livres.iads.content_utils import combine_text
 from recommandation_de_livres.iads.text_cleaning import nettoyage_leger
 
@@ -27,14 +28,14 @@ else:
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    input_path: Path = PROCESSED_DATA_DIR / DIR / "content_dataset.pkl",
+    input_path: Path = PROCESSED_DATA_DIR / DIR / "content_dataset.parquet",
     output_path_csv: Path = PROCESSED_DATA_DIR / DIR / "features_sbert.csv",
-    output_path_pkl: Path = PROCESSED_DATA_DIR / DIR / "features_sbert.pkl",
+    output_path_parquet: Path = PROCESSED_DATA_DIR / DIR / "features_sbert.parquet",
     # -----------------------------------------
 ):
     logger.info('Loading content dataset...')
 
-    content_df = pd.read_pickle(input_path)
+    content_df = load_parquet(input_path)
 
     logger.info("Cleaning and tokenizing the text...")
 
@@ -60,7 +61,7 @@ def main(
     logger.info("Saving the features...")
 
     save_df_to_csv(features_df, output_path_csv)
-    save_df_to_pickle(features_df, output_path_pkl)
+    save_df_to_parquet(features_df, output_path_parquet)
 
     logger.success("Sentence-BERT features generation complete.")
     # -----------------------------------------

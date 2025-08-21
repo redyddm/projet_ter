@@ -64,6 +64,10 @@ def map_author_names(books_df, authors_df):
     tqdm.pandas(desc="Mapping des auteurs")
     books_df["authors"] = books_df["authors"].progress_apply(extract_names)
 
+    books_df['work_id'] = books_df['work_id'].astype('Int64')
+    books_df['publication_year'] = books_df['publication_year'].astype('Int64')
+
+
     return books_df
 
 def detect_language(text):

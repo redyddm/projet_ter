@@ -10,6 +10,7 @@ import pickle
 import torch
 
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
+from recommandation_de_livres.loaders.load_data import load_parquet
 
 app = typer.Typer()
 
@@ -27,14 +28,14 @@ else:
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    features_path: Path = PROCESSED_DATA_DIR / DIR / "features_sbert.pkl",
+    features_path: Path = PROCESSED_DATA_DIR / DIR / "features_sbert.parquet",
     model_path: Path = MODELS_DIR / DIR / "sbert_model",
     embeddings_path = PROCESSED_DATA_DIR / DIR / "embeddings_sbert.npy",
     # -----------------------------------------
 ):
     logger.info("Loading the features...")
 
-    content_df = pd.read_pickle(features_path)
+    content_df = load_parquet(features_path)
 
     logger.info("Loading a pretrained Sentence-Bert model...")
 

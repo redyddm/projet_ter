@@ -6,3 +6,6 @@ def load_csv(path: Path):
 
 def load_pkl(path: Path):
     return pd.read_pickle(path)
+
+def load_parquet(path: Path):
+    return pd.read_parquet(path)

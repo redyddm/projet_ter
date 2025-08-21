@@ -10,16 +10,15 @@ from recommandation_de_livres.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
 app = typer.Typer()
 
-DIR = 'Book_depository'
-DIR_OUPUT = 'depository'
+DIR = 'depository'
 
 @app.command()
 def main(
     input_path: Path = RAW_DATA_DIR / DIR / "dataset.csv",
     authors_path: Path = RAW_DATA_DIR / DIR / "authors.csv",
     categories_path: Path = RAW_DATA_DIR / DIR /  "categories.csv",
-    output_path: Path = PROCESSED_DATA_DIR / DIR_OUPUT / "content_dataset.csv",
-    output_path_pkl: Path = PROCESSED_DATA_DIR / DIR_OUPUT / "content_dataset.pkl",
+    output_path: Path = PROCESSED_DATA_DIR / DIR / "content_dataset.csv",
+    output_path_pkl: Path = PROCESSED_DATA_DIR / DIR / "content_dataset.pkl",
 ):
     logger.info("Loading raw datasets...")
     books = load_content_depository.load_books(input_path)

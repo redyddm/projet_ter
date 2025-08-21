@@ -10,15 +10,14 @@ from recommandation_de_livres.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
 app = typer.Typer()
 
-DIR = 'Recommender_dataset'
-DIR_OUTPUT = 'recommender'
+DIR = 'recommender'
 
 @app.command()
 def main(
     books_path: Path = RAW_DATA_DIR / DIR / "Books.csv",
     ratings_path: Path = RAW_DATA_DIR / DIR / "Ratings.csv",
-    output_path: Path = PROCESSED_DATA_DIR / DIR_OUTPUT / "collaborative_dataset.csv",
-    output_path_pkl: Path = PROCESSED_DATA_DIR / DIR_OUTPUT / "collaborative_dataset.pkl",
+    output_path: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.csv",
+    output_path_pkl: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.pkl",
 ):
     logger.info("Loading raw datasets...")
     books = load_data.load_books(books_path)

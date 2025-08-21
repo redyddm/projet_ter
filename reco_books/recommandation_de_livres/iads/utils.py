@@ -12,6 +12,12 @@ def save_df_to_pickle(df: pd.DataFrame, filepath: str):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     df.to_pickle(filepath)
 
+def save_df_to_parquet(df, filepath):
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    import pandas as pd
+    df.to_parquet(filepath, engine='pyarrow', index=False, compression='snappy')
+
+
 def get_cover_url(isbn):
     url = f"https://bookcover.longitood.com/bookcover/{isbn}"
     try:
