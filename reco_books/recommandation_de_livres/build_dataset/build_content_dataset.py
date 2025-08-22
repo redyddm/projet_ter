@@ -1,35 +1,45 @@
 from recommandation_de_livres.preprocessing.preprocess_content import *
 from recommandation_de_livres.config import INTERIM_DATA_DIR
-import pandas as pd
-from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle
+from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_parquet
+from pathlib import Path
+import numpy as np
 
-DIR = 'recommender'
+def build_content_dataset(books, authors=None, categories=None, dataset_dir=None,
+                          title_col="title", desc_col=None,
+                          authors_col="authors", book_id_col="book_id",
+                          lang_col="language", add_language=False, allowed_langs=None):
+    """
+    Build content dataset uniformisé avec :
+    - mapping des auteurs
+    - ajout des langues manquantes
+    - ajout des catégories/genres
+    - filtrage et nettoyage (NaN, doublons, langues)
+    """
 
-def build_content_dataset(books, update=False):
+    # --- Mapping des auteurs si fourni ---
+    if authors is not None:
+        books = map_author_names(books, authors, authors_col=authors_col)
 
-    books.dropna(inplace=True)
+    # --- Sauvegarde intermédiaire après mapping auteurs ---
+    save_df_to_csv(books, dataset_dir / "books_authors.csv")
+    save_df_to_parquet(books, dataset_dir / "books_authors.parquet")
 
-    # Sélection et renommage des colonnes
-    books = select_and_rename_books_columns(books)
+    # --- Ajout de la langue pour les lignes où elle est manquante ---
+    if add_language:
+        books = add_language_column(books, title_col=title_col, desc_col=desc_col, lang_col=lang_col)
 
-    # Récupération des descriptions si possible via openlibrary
-    if update : #la première fois
+    # --- Ajout des catégories si fourni ---
+    if categories is not None:
+        books = add_categories_columns(books, categories, book_id_col=book_id_col)
+
+    if desc_col is None:
         books = get_descriptions(books)
-        save_df_to_csv(books, INTERIM_DATA_DIR / DIR / "books_desc.csv")
-        save_df_to_pickle(books, INTERIM_DATA_DIR / DIR / "books_desc.pkl")
-        
-    else :
-        books = pd.read_pickle(INTERIM_DATA_DIR / "books_desc.pkl")
 
-    # Ajout de la langue pour éviter les doublons internationaux
-    books = add_language_column(books)
+    # --- Filtrage de base (NaN sur titre/description et langues autorisées) ---
+    books = filter_books_basic(books, title_col=title_col, desc_col=desc_col,
+                               lang_col=lang_col, allowed_langs=allowed_langs)
 
-    # Filtrage de base (NaN)
-    books = filter_books_basic(books)
-
-    # Suppression des titres en doublon
-    books = remove_duplicates(books)
-
-    books['description']=books['description'].apply(list_to_str)
+    # --- Suppression des doublons sur titre nettoyé ---
+    books = remove_duplicates(books, title_col=title_col)
 
     return books

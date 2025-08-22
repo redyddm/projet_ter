@@ -15,22 +15,22 @@ books_per_page = 9  # nombre de livres par page
 total_pages = (len(books) - 1) // books_per_page + 1
 
 # Page courante
-if "page_num" not in st.session_state:
-    st.session_state["page_num"] = 1
+if "page_num_bibl" not in st.session_state:
+    st.session_state["page_num_bibl"] = 1
 
 # Navigation
 col1, col2, col3 = st.columns([1, 2, 1])
 with col1:
-    if st.button("⬅ Précédent") and st.session_state["page_num"] > 1:
-        st.session_state["page_num"] -= 1
+    if st.button("⬅ Précédent") and st.session_state["page_num_bibl"] > 1:
+        st.session_state["page_num_bibl"] -= 1
 with col3:
-    if st.button("Suivant ➡") and st.session_state["page_num"] < total_pages:
-        st.session_state["page_num"] += 1
+    if st.button("Suivant ➡") and st.session_state["page_num_bibl"] < total_pages:
+        st.session_state["page_num_bibl"] += 1
 with col2:
-    st.markdown(f"Page {st.session_state['page_num']} / {total_pages}")
+    st.markdown(f"Page {st.session_state['page_num_bibl']} / {total_pages}")
 
 # Calculer les indices pour la page actuelle
-start_idx = (st.session_state["page_num"] - 1) * books_per_page
+start_idx = (st.session_state["page_num_bibl"] - 1) * books_per_page
 end_idx = start_idx + books_per_page
 books_page = books.iloc[start_idx:end_idx]
 

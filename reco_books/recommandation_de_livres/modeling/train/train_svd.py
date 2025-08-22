@@ -34,13 +34,12 @@ def main(
 
     if choice == "1":
         reader = Reader(rating_scale=(1,10))
-        data = Dataset.load_from_df(collaborative_df[['user_id','ISBN','rating']], reader)
-        trainset = data.build_full_trainset()
 
     elif choice == "2":
         reader = Reader(rating_scale=(1,5))
-        data = Dataset.load_from_df(collaborative_df[['user_id','book_id','rating']], reader)
-        trainset = data.build_full_trainset()
+
+    data = Dataset.load_from_df(collaborative_df[['user_id','item_id','rating']], reader)
+    trainset = data.build_full_trainset()
 
     logger.info("Creating a SVD model...")
 

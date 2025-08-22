@@ -7,7 +7,6 @@ from tqdm import tqdm
 
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
 from recommandation_de_livres.iads.svd_utils import recommandation_collaborative_top_k
-from recommandation_de_livres.iads.svd_utils_gdr import recommandation_collaborative_top_k_gdr
 from recommandation_de_livres.loaders.load_data import load_parquet
 
 app = typer.Typer()
@@ -23,7 +22,7 @@ else:
 
 @app.command()
 def main(
-    user_id: str,
+    user_index: str,
     model_path: Path = MODELS_DIR / DIR / "svd_model.pkl",
     ratings_path: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.parquet",
     top_k: int = 5
@@ -31,6 +30,11 @@ def main(
     
     logger.info("Loading ratings and books data...")
     ratings = load_parquet(ratings_path)
+    user_ratings = ratings.loc[ratings['user_index']==int(user_index)].iloc[0]
+    if user_ratings.empty:
+        raise ValueError(f"Aucun utilisateur trouvé avec user_index={user_index}")
+    else:
+        user_id = user_ratings['user_id']
     ratings["user_id"] = ratings["user_id"].astype(str)
 
     logger.info(f"Loading trained SVD model from {model_path}")
@@ -42,20 +46,13 @@ def main(
         return
 
     logger.info(f"Predicting top-{top_k} recommendations for user {user_id}...")
-    if choice =="1":
-        top_recommendations = recommandation_collaborative_top_k(
-            k=top_k,
-            user_id=user_id,
-            model=model,
-            ratings=ratings
-        )
-    elif choice == "2" :
-         top_recommendations = recommandation_collaborative_top_k_gdr(
-            k=top_k,
-            user_id=user_id,
-            model=model,
-            ratings=ratings
-        )
+
+    top_recommendations = recommandation_collaborative_top_k(
+    k=top_k,
+    user_id=user_id,
+    model=model,
+    ratings=ratings
+    )
 
     logger.info("Top recommendations:")
     logger.info("\n" + top_recommendations.to_string(index=False))

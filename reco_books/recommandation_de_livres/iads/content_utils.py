@@ -41,38 +41,11 @@ def recommandation_content_top_k(book_title, embeddings, model, books_df, k=5):
     similarity = cosine_similarity(book_embedding, embeddings)[0]
 
     # Top k indices
-    top_k_idx = np.argsort(similarity)[-k*2:][::-1]  # prendre un peu plus pour être sûr
-    top_k_idx = [i for i in top_k_idx if i != book_index][:k]
-
-    # Extraire titres et auteurs
-    if 'Image-URL-L' in books_df.columns:
-        top_books = books_df.iloc[top_k_idx][['isbn', 'isbn13', 'title', 'authors', 'Image-URL-L']].copy()
-    else:
-        top_books = books_df.iloc[top_k_idx][['isbn', 'isbn13', 'title', 'authors']].copy()
-
-    return top_books
-
-def recommandation_content_top_k_gdr(book_title, embeddings, model, books_df, k=5):
-    books_names=set(books_df['title'])
-
-    # Embedding du livre donné
-    if book_title in books_names:
-        book_index=get_book_index(book_title, books_df)
-        book_embedding=embeddings[book_index]
-
-    else:
-        book_embedding=get_book_embedding(book_title, model)
-        
-    # Calcul des similarités
-    similarity = cosine_similarity(book_embedding, embeddings)[0]
-
-    # Top k indices
-    top_k_idx = np.argsort(similarity)[-k*2:][::-1]  # prendre un peu plus pour être sûr
-    top_k_idx = [i for i in top_k_idx if i != book_index][:k]
+    top_k_idx = np.argsort(similarity)[-k:][::-1]  # prendre un peu plus pour être sûr
 
     # Extraire titres et auteurs
 
-    top_books = books_df.iloc[top_k_idx][['isbn', 'title', 'authors', 'publisher', 'publication_year','description', 'image_url']].copy()
+    top_books = books_df.iloc[top_k_idx][['title', 'authors']].copy()
 
     return top_books
 

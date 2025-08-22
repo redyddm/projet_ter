@@ -14,16 +14,14 @@ from recommandation_de_livres.iads.text_cleaning import nettoyage_leger
 
 app = typer.Typer()
 
-choice = input("Choix du dataset [3] : Recommender (1), Depository (2), Goodreads (3) ") or "3"
+choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2) ") or "2"
 
 if choice == "1":
     DIR = "recommender"
 elif choice == "2":
-    DIR = "depository"
-elif choice == "3":
     DIR = "goodreads"
 else:
-    raise ValueError("Choix invalide (1, 2 ou 3 attendu)")
+    raise ValueError("Choix invalide (1 ou 2 attendu)")
 
 @app.command()
 def main(
@@ -46,17 +44,10 @@ def main(
 
     logger.info("Creating the features dataframe...")
 
-    if choice == "3":
-        features_df = pd.DataFrame({
-        'book_id': content_df['book_id'],
-        'text_clean': content_df['text_clean']
-        })
-        
-    else:
-        features_df = pd.DataFrame({
-            'isbn': content_df['isbn'],
-            'text_clean': content_df['text_clean']
-        })
+    features_df = pd.DataFrame({
+    'item_id': content_df['item_id'],
+    'text_clean': content_df['text_clean']
+    })
 
     logger.info("Saving the features...")
 
