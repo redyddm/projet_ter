@@ -44,21 +44,21 @@ def main(
     if dataset_choice == "1":
         ratings_uniform = rename_ratings_columns(
             ratings,
-            user_col="User-ID" if dataset_choice=="1" else "user_id",
-            item_col="ISBN" if dataset_choice=="1" else "book_id",
-            rating_col="Book-Rating" if dataset_choice=="1" else "rating"
+            user_col="User-ID",
+            item_col="ISBN",
+            rating_col="Book-Rating"
         )
 
         logger.info("Uniformisation du dataset books...")
         books_uniform = rename_books_columns(
             books,
-            isbn_col="ISBN" if dataset_choice=="1" else "isbn",
-            book_id_col="book_id" if dataset_choice=="2" else None,
-            title_col="Book-Title" if dataset_choice=="1" else "title",
-            author_col="Book-Author" if dataset_choice=="1" else "authors",
-            publisher_col="Publisher" if dataset_choice=="1" else "publisher",
-            year_col="Year-Of-Publication" if dataset_choice=="1" else "publication_year",
-            image_col="Image-URL-L" if dataset_choice=="1" else "image_url"
+            isbn_col="ISBN",
+            book_id_col=None,
+            title_col="Book-Title",
+            author_col="Book-Author",
+            publisher_col="Publisher",
+            year_col="Year-Of-Publication",
+            image_col="Image-URL-L"
         )
     
     elif dataset_choice=="2":

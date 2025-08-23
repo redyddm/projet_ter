@@ -9,13 +9,13 @@ if not st.session_state.get("logged_in", False):
 st.title("📚 Ma Collection")
 
 # Vérifier que les données sont chargées
-if "books" not in st.session_state or "ratings" not in st.session_state:
+if "books_gdr" not in st.session_state or "ratings_gdr" not in st.session_state:
     st.error("❌ Les données ne sont pas chargées. Retournez à l’accueil.")
     st.stop()
 
-books = st.session_state["books"]
-ratings = st.session_state["ratings"]
-users = st.session_state["users"]    
+books = st.session_state["books_gdr"]
+ratings = st.session_state["ratings_gdr"]
+users = st.session_state["users_gdr"]    
 
 user_index = st.session_state['user_index']
 user_id = st.session_state["user_id"]

@@ -11,32 +11,6 @@ from recommandation_de_livres.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, IN
 
 st.set_page_config(page_title="Accueil", layout="wide", page_icon="📚")
 
-DIR ='goodreads'
-
-@st.cache_data
-def load_books():
-    return load_parquet(INTERIM_DATA_DIR / DIR / "books_authors.parquet")
-
-@st.cache_data
-def load_ratings():
-    return load_parquet(PROCESSED_DATA_DIR / DIR / "collaborative_dataset.parquet")
-
-@st.cache_data
-def load_users():
-    return load_csv(RAW_DATA_DIR / DIR / "users.csv")
-
-# ---------------------------
-# Session state : init
-# ---------------------------
-if "books" not in st.session_state:
-    st.session_state["books"] = load_books()
-
-if "ratings" not in st.session_state:
-    st.session_state["ratings"] = load_ratings()
-
-if "users" not in st.session_state:
-    st.session_state["users"] = load_users()
-
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
     st.session_state["username"] = None

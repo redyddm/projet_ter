@@ -40,7 +40,7 @@ def get_index(title, books):
 def get_book(item_id, books):
     match = books[books['item_id'] == item_id]
     if not match.empty:
-        return match.iloc[0]['title']  # retourne une chaîne
+        return match.iloc[0]  # retourne une chaîne
     return 'Titre inconnu'
 
 def get_book_cover(item_id, books):
@@ -99,7 +99,7 @@ def predict_unrated_books(user_id, model, non_note):
 
     return pred_data
 
-def recommandation_collaborative_top_k(k, user_id, model, ratings):
+def recommandation_collaborative_top_k(k, user_id, model, ratings, books):
 
     non_note=get_unrated_item(user_id, ratings)
 
@@ -107,8 +107,6 @@ def recommandation_collaborative_top_k(k, user_id, model, ratings):
 
     top_k = pred_ratings.head(k).copy()
 
-    top_k['title'] = top_k['item_id'].apply(get_book, books=ratings)
+    top_k_df = top_k['item_id'].apply(get_book, books=books)
 
-    top_k['cover'] = top_k['item_id'].apply(get_book_cover, books=ratings)
-
-    return top_k
+    return top_k_df

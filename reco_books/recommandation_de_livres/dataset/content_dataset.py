@@ -31,11 +31,14 @@ def main(
     logger.info(f"Loading raw datasets for '{DIR}'...")
     books = load_data.load_parquet(books_path)
 
+    add_lang_input = input("Ajouter les langues [2] : True (1), False (2) ") or "2"
+    add_lang = True if add_lang_input=="1" else False
+
     if dataset_choice=="2":
         authors_path: Path = RAW_DATA_DIR / DIR / "authors.csv"
         categories_path: Path = RAW_DATA_DIR / DIR / "categories.csv"
         description = "description"
-        allowed_langs=['en', 'eng', 'en-US', 'en-GB', 'en-CA', np.nan]
+        allowed_langs=['en', 'eng', 'en-US', 'en-GB', 'en-CA']
     else :
         description = None
         allowed_langs = None
@@ -51,7 +54,8 @@ def main(
         lang_col="language",
         desc_col=description,
         dataset_dir=INTERIM_DATA_DIR / DIR, 
-        allowed_langs=allowed_langs
+        allowed_langs=allowed_langs,
+        add_language=add_lang
     )
 
     logger.info(f"Saving processed dataset to {output_path_csv} and {output_path_parquet}")

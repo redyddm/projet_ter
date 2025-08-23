@@ -8,8 +8,9 @@ from open_library.openlibrary_extract import *
 DetectorFactory.seed = 0
 
 def str_to_list(s):
-    return ast.literal_eval(s)
-
+    if isinstance(s, str):
+        return ast.literal_eval(s)
+    return s
 def list_to_str(lst):
     if isinstance(lst, list):
         return ' '.join(str(x) for x in lst)
@@ -61,7 +62,7 @@ def add_language_column(books, title_col="title", desc_col="description", lang_c
     )
     return books
 
-def get_descriptions(books): 
+def get_infos(books): 
 
     isbn_list = books['isbn'] 
     
@@ -69,11 +70,14 @@ def get_descriptions(books):
 
     update_editions_work_key(keys) 
 
-    descriptions, isbn_13 = get_used_infos_by_isbn_list(isbn_list) 
+    categories, descriptions = get_infos_by_isbn_list(isbn_list) 
 
     books['description'] = descriptions 
 
-    books['isbn13'] = isbn_13 
+    books['categories'] = categories 
+
+    books['description'] = books['description'].apply(list_to_str)
+    books['categories'] = books['categories'].apply(list_to_str)
 
     return books
 
@@ -111,4 +115,30 @@ def add_categories_columns(books, categories_df, book_id_col="book_id"):
     Merge avec les catégories/genres si disponibles.
     """
     books = books.merge(categories_df, on=book_id_col, how='left')
+    return books
+
+import ast
+
+def add_genres_str_column(books, categories_df, book_id_col="book_id", genres_col="genres_str"):
+    # Copier pour éviter de modifier l'original
+    categories_df = categories_df.copy()
+    
+    # Convertir la colonne 'genres' de string -> dict
+    categories_df['genres'] = categories_df['genres'].apply(ast.literal_eval)
+    
+    # Transformer chaque dict en une chaîne de genres séparés par des virgules
+    categories_df[genres_col] = categories_df['genres'].apply(lambda x: ', '.join(x.keys()))
+    
+    # Supprimer l'ancienne colonne
+    categories_df = categories_df.drop(columns=['genres'])
+
+    categories_df.rename(columns={genres_col: "categories"}, inplace=True)
+    
+    genres_col="categories"
+    # Merge avec les livres
+    books = books.merge(categories_df, on=book_id_col, how='left')
+    
+    # Remplacer les NaN par chaîne vide pour les livres sans genres connus
+    books[genres_col] = books[genres_col].fillna('')
+    
     return books

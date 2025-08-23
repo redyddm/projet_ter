@@ -28,14 +28,14 @@ def load_users():
 # ---------------------------
 # Session state : init
 # ---------------------------
-if "books" not in st.session_state:
-    st.session_state["books"] = load_books()
+if "books_gdr" not in st.session_state:
+    st.session_state["books_gdr"] = load_books()
 
-if "ratings" not in st.session_state:
-    st.session_state["ratings"] = load_ratings()
+if "ratings_gdr" not in st.session_state:
+    st.session_state["ratings_gdr"] = load_ratings()
 
 if "users" not in st.session_state:
-    st.session_state["users"] = load_users()
+    st.session_state["users_gdr"] = load_users()
 
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
@@ -50,7 +50,7 @@ st.sidebar.title("🔑 Connexion")
 if not st.session_state["logged_in"]:
     username_input = st.sidebar.text_input("Nom d’utilisateur (userX)")
     if st.sidebar.button("Se connecter"):
-        users = st.session_state["users"]
+        users = st.session_state["users_gdr"]
         if username_input in users["username"].values:
             user_row = users.loc[users["username"] == username_input].iloc[0]
             st.session_state["logged_in"] = True
@@ -83,6 +83,6 @@ else:
     - 📚 Gérer votre collection
     """)
     if "page_num" in st.session_state:
-        st.session_state["page_num"] = 0
+        st.session_state["page_num"] = 1
         st.session_state["prev_clicked"] = False
         st.session_state["next_clicked"] = False

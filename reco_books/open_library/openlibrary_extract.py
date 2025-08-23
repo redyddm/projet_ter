@@ -121,3 +121,64 @@ def get_used_infos_by_isbn_list(isbn_list):
     conn.close()
 
     return desc_final, isbn_13
+
+def get_infos_by_isbn_list(isbn_list):
+    conn = psycopg2.connect(
+        dbname='openlibrary',
+        user='postgres', 
+        password='redsql', 
+        host='localhost',
+        port='5432'
+    )
+    conn.autocommit = True
+    cur = conn.cursor()
+
+    # Requête sql permettant de récupérer les genres et descriptions d'un livre via son isbn
+    sql = """
+        select
+        e.data->>'subjects' "Subjects",
+        w.data->'description'->>'value' "WorkDescription"
+    from editions e
+    join edition_isbns ei
+        on ei.edition_key = e.key
+    join works w
+        on w.key = e.work_key
+    where ei.isbn = %s
+    """
+
+    # Comme on peut avoir plusieurs résultats pour un même isbn, 
+    # la requête renverra plusieurs fois des subjects et descriptions (assez souvent identiques)
+    # On traite de ce cas juste après
+    
+    subjects_final= [] # liste de listes qui contiendra les genres recueillis de chaque livre
+    desc_final=[] # liste des descriptions des livres
+    for isbn in tqdm(isbn_list):
+        cur.execute(sql, (isbn,))
+        results = cur.fetchall()
+
+        # On crée ici des sets pour éviter les doublons lors de l'ajout des genres ou descriptions
+        all_words = set()
+        description_set = set()
+        for r in results:
+            
+            if r[0]:
+                subjects_list = json.loads(r[0]) 
+                for subject in subjects_list:
+                    words = split_subject_words(subject) # On sépare les mots des listes de genres qu'on obtient 
+                                                         # pour comparer avec les suivants et ne pas ajouter de doublon
+                    for w in words:
+                        all_words.add(w)
+
+            
+            if r[1]:
+                description_set.add(r[1])
+
+        subjects_words = list(all_words)
+        descriptions = list(description_set)
+        subjects_final.append(subjects_words)
+        desc_final.append(descriptions)
+
+    cur.close()
+    conn.close()
+
+    return subjects_final, desc_final

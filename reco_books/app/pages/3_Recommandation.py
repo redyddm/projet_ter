@@ -11,8 +11,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from recommandation_de_livres.config import PROCESSED_DATA_DIR, MODELS_DIR
 from recommandation_de_livres.iads.utils import stars
 from recommandation_de_livres.loaders.load_data import load_pkl, load_parquet
-from recommandation_de_livres.iads.svd_utils_gdr import recommandation_collaborative_top_k_gdr
-from recommandation_de_livres.iads.content_utils import suggest_titles, recommandation_content_top_k_gdr
+from recommandation_de_livres.iads.svd_utils import recommandation_collaborative_top_k
+from recommandation_de_livres.iads.content_utils import suggest_titles, recommandation_content_top_k
 
 DIR = "goodreads"
 
@@ -23,9 +23,9 @@ if not st.session_state.get("logged_in", False):
     st.warning("🚪 Veuillez vous connecter pour accéder à cette page.")
     st.stop()
 
-books = st.session_state["books"]
-ratings = st.session_state["ratings"]
-users = st.session_state["users"]
+books = st.session_state["books_gdr"]
+ratings = st.session_state["ratings_gdr"]
+users = st.session_state["users_gdr"]
 
 @st.cache_data
 def load_content():
@@ -66,11 +66,12 @@ if reco_type == "Collaborative (SVD)":
     model = load_svd_model(DIR)
 
     if st.button("Rechercher SVD"):
-        top_books = recommandation_collaborative_top_k_gdr(
+        top_books = recommandation_collaborative_top_k(
             k=top_k,
             user_id=st.session_state["user_id"],
             model=model,
-            ratings=ratings
+            ratings=ratings,
+            books=books
         )
 
         cols = st.columns(5)
@@ -119,7 +120,7 @@ elif reco_type == "Contenu (Word2Vec)":
         selected_title = selected_title_author.split(" - ")[0]
 
     if st.button("Rechercher Word2Vec"):
-        top_books = recommandation_content_top_k_gdr(selected_title, embeddings_w2v, w2v_model, content_df, top_k)
+        top_books = recommandation_content_top_k(selected_title, embeddings_w2v, w2v_model, content_df, top_k)
 
         cols = st.columns(5)
         for i, (_, book) in enumerate(top_books.iterrows()):
@@ -168,7 +169,7 @@ else:
         selected_title = selected_title_author.split(" - ")[0]
 
     if st.button("Rechercher S-BERT"):
-        top_books = recommandation_content_top_k_gdr(selected_title, embeddings_sbert, sbert_model, content_df, top_k)
+        top_books = recommandation_content_top_k(selected_title, embeddings_sbert, sbert_model, content_df, top_k)
 
         cols = st.columns(5)
         for i, (_, book) in enumerate(top_books.iterrows()):

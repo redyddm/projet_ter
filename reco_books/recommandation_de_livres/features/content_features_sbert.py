@@ -14,14 +14,16 @@ from recommandation_de_livres.iads.text_cleaning import nettoyage_leger
 
 app = typer.Typer()
 
-choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2) ") or "2"
+choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2), Fusion (3) ") or "2"
 
 if choice == "1":
     DIR = "recommender"
 elif choice == "2":
     DIR = "goodreads"
+elif choice == "3":
+    DIR = "fusion"
 else:
-    raise ValueError("Choix invalide (1 ou 2 attendu)")
+    raise ValueError("Choix invalide (1, 2 ou 3 attendu)")
 
 @app.command()
 def main(
@@ -37,9 +39,10 @@ def main(
 
     logger.info("Cleaning and tokenizing the text...")
 
-    tqdm.pandas(desc='Nettoyage des textes')
+    tqdm.pandas(desc='Fusion des textes')
+    content_df['text_combined'] = content_df.progress_apply(combine_text, axis=1)
 
-    content_df['text_combined'] = content_df.progress_apply(lambda row: combine_text(row, choice), axis=1)
+    tqdm.pandas(desc='Nettoyage des textes')
     content_df['text_clean'] = content_df['text_combined'].progress_apply(nettoyage_leger)
 
     logger.info("Creating the features dataframe...")
@@ -50,6 +53,9 @@ def main(
     })
 
     logger.info("Saving the features...")
+
+    output_path_csv.parent.mkdir(parents=True, exist_ok=True)
+    output_path_parquet.parent.mkdir(parents=True, exist_ok=True)
 
     save_df_to_csv(features_df, output_path_csv)
     save_df_to_parquet(features_df, output_path_parquet)

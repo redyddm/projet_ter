@@ -53,6 +53,7 @@ def rename_books_columns(books,
 
     # Mapping des autres colonnes
     rename_map = {}
+    if isbn_col is not None: rename_map[isbn_col] = "isbn"
     if title_col is not None: rename_map[title_col] = "title"
     if author_col is not None: rename_map[author_col] = "authors"
     if language_col is not None: rename_map[language_col] = "language"
