@@ -5,6 +5,7 @@ import typer
 
 from recommandation_de_livres.loaders import load_data
 from recommandation_de_livres.build_dataset import build_collaborative_dataset
+from recommandation_de_livres.iads.create_users import create_users_file
 from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_parquet
 from recommandation_de_livres.config import RAW_DATA_DIR, PROCESSED_DATA_DIR, INTERIM_DATA_DIR
 
@@ -28,6 +29,7 @@ def main(
     ratings_path: Path = INTERIM_DATA_DIR / DIR / "ratings_uniform.parquet",
     output_path: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.csv",
     output_path_parquet: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.parquet",
+    output_users: Path =PROCESSED_DATA_DIR / DIR / "users.csv"
 ):
     
     logger.info("Loading raw datasets...")
@@ -38,6 +40,7 @@ def main(
     ratings_df = build_collaborative_dataset.build_collaborative_dataset(books, ratings, authors=authors, min_ratings=50, min_users_interaction=100)
 
     logger.info(f"Saving processed dataset to {output_path} and {output_path_parquet}")
+    create_users_file(output_path, output_users)
     save_df_to_csv(ratings_df, output_path)
     save_df_to_parquet(ratings_df, output_path_parquet)
     logger.success("Processing dataset complete.")

@@ -14,7 +14,7 @@ from recommandation_de_livres.loaders.load_data import load_pkl, load_parquet
 from recommandation_de_livres.iads.collabo_utils import recommandation_collaborative_top_k
 from recommandation_de_livres.iads.content_utils import suggest_titles, recommandation_content_top_k
 
-DIR = "goodreads"
+DIR = "fusion"
 
 # ---------------------------
 # Vérifier connexion
@@ -23,9 +23,9 @@ if not st.session_state.get("logged_in", False):
     st.warning("🚪 Veuillez vous connecter pour accéder à cette page.")
     st.stop()
 
-books = st.session_state["books_gdr"]
-ratings = st.session_state["ratings_gdr"]
-users = st.session_state["users_gdr"]
+books = st.session_state["books"]
+ratings = st.session_state["ratings"]
+users = st.session_state["users"]
 
 @st.cache_data
 def load_content():
@@ -70,8 +70,7 @@ if reco_type == "Collaborative (SVD)":
             k=top_k,
             user_id=st.session_state["user_id"],
             model=model,
-            ratings=ratings,
-            books=books
+            ratings=ratings
         )
 
         cols = st.columns(5)

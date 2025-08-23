@@ -15,12 +15,8 @@ dataset_choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2) ")
 
 if dataset_choice == "1":
     DIR = "recommender"
-    description = None
 elif dataset_choice == "2":
     DIR = "goodreads"
-    authors_path: Path = RAW_DATA_DIR / DIR / "authors.csv"
-    categories_path: Path = RAW_DATA_DIR / DIR / "categories.csv"
-    description = "description"
 else:
     raise ValueError("Choix invalide (1 ou 2 attendu)")
 
@@ -35,13 +31,17 @@ def main(
     logger.info(f"Loading raw datasets for '{DIR}'...")
     books = load_data.load_parquet(books_path)
 
+    if dataset_choice == "1":
+        description = None
+    elif dataset_choice == "2":
+        authors_path: Path = RAW_DATA_DIR / DIR / "authors.csv"
+        categories_path: Path = RAW_DATA_DIR / DIR / "categories.csv"
+        description = "description"
+
     add_lang_input = input("Ajouter les langues [2] : True (1), False (2) ") or "2"
     add_lang = True if add_lang_input=="1" else False
 
-    if add_lang:
-        allowed_langs=['en', 'eng', 'en-US', 'en-GB', 'en-CA']
-    else :
-        allowed_langs = None
+    allowed_langs=['en', 'eng', 'en-US', 'en-GB', 'en-CA']
 
     authors = load_data.load_csv(authors_path) if authors_path else None
     categories = load_data.load_csv(categories_path) if categories_path else None

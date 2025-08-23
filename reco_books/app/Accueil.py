@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from pathlib import Path
 
 import sys
 import os
@@ -11,32 +12,47 @@ from recommandation_de_livres.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, IN
 
 st.set_page_config(page_title="Accueil", layout="wide", page_icon="📚")
 
-DIR ='goodreads'
+DATA_DIR = Path("data/raw")
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+choice = st.selectbox("Choix du dataset :", ["Recommender", "Goodreads", "Personnel"], index=0)
 
 @st.cache_data
-def load_books():
-    return load_parquet(INTERIM_DATA_DIR / DIR / "books_authors.parquet")
+def load_books(dir_name):
+    return load_parquet(PROCESSED_DATA_DIR / dir_name / "content_dataset.parquet")
 
 @st.cache_data
-def load_ratings():
-    return load_parquet(PROCESSED_DATA_DIR / DIR / "collaborative_dataset.parquet")
+def load_ratings(dir_name):
+    return load_parquet(PROCESSED_DATA_DIR / dir_name / "collaborative_dataset.parquet")
 
 @st.cache_data
-def load_users():
-    return load_csv(RAW_DATA_DIR / DIR / "users.csv")
+def load_users(dir_name):
+    return load_csv(PROCESSED_DATA_DIR / dir_name / "users.csv")
+
+# Déterminer le DIR en fonction du choix
+if choice.startswith("Personnel"):
+    book_path = DATA_DIR / "books_uniform.csv"
+    rating_path = DATA_DIR / "ratings_uniform.csv"
+    DIR = None  # pas utilisé
+else:
+    if choice.startswith("Recommender"):
+        DIR = "recommender"
+    elif choice.startswith("Goodreads"):
+        DIR = "goodreads"
+
+# Charger les données après avoir déterminé DIR
+if st.button("Charger les données"):
+    if choice.startswith("Personnel"):
+        st.session_state["books"] = pd.read_csv(book_path)
+        st.session_state["ratings"] = pd.read_csv(rating_path)
+    else:
+        st.session_state["books"] = load_books(DIR)
+        st.session_state["ratings"] = load_ratings(DIR)
+        st.session_state["users"] = load_users(DIR)
 
 # ---------------------------
 # Session state : init
 # ---------------------------
-if "books_gdr" not in st.session_state:
-    st.session_state["books_gdr"] = load_books()
-
-if "ratings_gdr" not in st.session_state:
-    st.session_state["ratings_gdr"] = load_ratings()
-
-if "users" not in st.session_state:
-    st.session_state["users_gdr"] = load_users()
-
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
     st.session_state["username"] = None
@@ -50,7 +66,7 @@ st.sidebar.title("🔑 Connexion")
 if not st.session_state["logged_in"]:
     username_input = st.sidebar.text_input("Nom d’utilisateur (userX)")
     if st.sidebar.button("Se connecter"):
-        users = st.session_state["users_gdr"]
+        users = st.session_state["users"]
         if username_input in users["username"].values:
             user_row = users.loc[users["username"] == username_input].iloc[0]
             st.session_state["logged_in"] = True

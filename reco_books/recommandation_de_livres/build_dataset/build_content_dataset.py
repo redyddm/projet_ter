@@ -1,6 +1,7 @@
 from recommandation_de_livres.preprocessing.preprocess_content import *
 from recommandation_de_livres.config import INTERIM_DATA_DIR 
 from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_parquet
+from recommandation_de_livres.iads.text_cleaning import clean_text_for_display
 from pathlib import Path
 import numpy as np
 
@@ -33,6 +34,14 @@ def build_content_dataset(books, authors=None, categories=None, dataset_dir=None
         desc_col="description"
         catego_col="categories"
 
+    # --- Nettoyage des balises html et du bruit ---
+
+    books['title'] = books['title'].apply(clean_text_for_display)
+    books['authors'] = books['authors'].apply(clean_text_for_display)
+    books['categories'] = books['categories'].apply(clean_text_for_display)
+    books['publisher'] = books['publisher'].apply(clean_text_for_display)
+    books['description'] = books['description'].apply(clean_text_for_display)
+
     # --- Ajout de la langue pour les lignes où elle est manquante ---
     if add_language:
         books = add_language_column(books, title_col=title_col, desc_col=desc_col, lang_col=lang_col)
@@ -43,5 +52,7 @@ def build_content_dataset(books, authors=None, categories=None, dataset_dir=None
 
     # --- Suppression des doublons sur titre nettoyé ---
     books = remove_duplicates(books, title_col=title_col)
+
+    #
 
     return books

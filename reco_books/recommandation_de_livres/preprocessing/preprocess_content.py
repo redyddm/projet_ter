@@ -11,10 +11,17 @@ def str_to_list(s):
     if isinstance(s, str):
         return ast.literal_eval(s)
     return s
-def list_to_str(lst):
+
+def list_to_str_desc(lst):
     if isinstance(lst, list):
         return ' '.join(str(x) for x in lst)
     return str(lst)
+
+def list_to_str_cate(lst):
+    if isinstance(lst, list):
+        return ', '.join(str(x) for x in lst)
+    return str(lst)
+
 
 def detect_language(text):
     try:

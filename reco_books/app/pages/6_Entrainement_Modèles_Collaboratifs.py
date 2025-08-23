@@ -21,12 +21,12 @@ if st.session_state.get("is_admin") is False:
 st.title("⚙️ Entraînement et comparaison SVD / NMF")
 
 # --- Choix du dataset ---
-choice = st.selectbox("Choix du dataset :", ["Recommender", "Goodreads"], index=0)
+choice = st.selectbox("Choix du dataset :", ["Recommender", "Goodreads", "Fusion"], index=0)
 
 if choice.startswith("Recommender"):
     DIR = "recommender"
     rating_scale = (1, 10)
-else:
+elif choice.startswith("Goodreads"):
     DIR = "goodreads"
     rating_scale = (1, 5)
 

@@ -12,16 +12,14 @@ from recommandation_de_livres.loaders.load_data import load_parquet
 
 app = typer.Typer()
 
-choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2), Fusion (3) ") or "2"
+choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2) ") or "2"
 
 if choice == "1":
     DIR = "recommender"
 elif choice == "2":
     DIR = "goodreads"
-elif choice == "3":
-    DIR = "fusion"
 else:
-    raise ValueError("Choix invalide (1, 2 ou 3 attendu)")
+    raise ValueError("Choix invalide (1 ou 2 attendu)")
 
 @app.command()
 def main(
@@ -37,7 +35,7 @@ def main(
     if choice == "1":
         reader = Reader(rating_scale=(1,10))
 
-    elif choice == "2" or choice == "3":
+    elif choice == "2":
         reader = Reader(rating_scale=(1,5))
 
     data = Dataset.load_from_df(collaborative_df[['user_id','item_id','rating']], reader)

@@ -16,16 +16,14 @@ from recommandation_de_livres.loaders.load_data import load_parquet
 
 app = typer.Typer()
 
-choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2), Fusion (3) ") or "2"
+choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2) ") or "2"
 
 if choice == "1":
     DIR = "recommender"
 elif choice == "2":
     DIR = "goodreads"
-elif choice == "3":
-    DIR = "fusion"
 else:
-    raise ValueError("Choix invalide (1, 2 ou 3 attendu)")
+    raise ValueError("Choix invalide (1 ou 2 attendu)")
 
 @app.command()
 
@@ -49,7 +47,7 @@ def main(
     top_books =recommandation_content_top_k(title, embeddings, model, content_df, k=top_k)
 
     logger.info(f"Top {top_k} recommandations :")
-    logger.info(f"\n{top_books}")
+    logger.info(f"\n{top_books[['title', 'authors']]}")
 
 
 if __name__ == "__main__":

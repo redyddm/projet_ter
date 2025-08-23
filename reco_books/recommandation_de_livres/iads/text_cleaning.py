@@ -1,4 +1,5 @@
 import re
+import html
 import gensim
 from gensim.parsing.preprocessing import remove_stopwords
 
@@ -15,6 +16,21 @@ def normalize_title(title: str) -> str:
     title = re.sub(r'[^a-z0-9\s]', '', title)  # supprime ponctuation
     title = re.sub(r'\s+', ' ', title).strip()
     return title
+
+def clean_text_for_display(text):
+    if not isinstance(text, str):
+        return ""
+    
+    # Enlever les balises HTML
+    text = re.sub(r'<.*?>', '', text)
+    
+    # Convertir les entités HTML en caractères normaux
+    text = html.unescape(text)
+    
+    # Nettoyer les espaces multiples
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    return text
 
 def nettoyage_leger(text):
     if isinstance(text, list):
