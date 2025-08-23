@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from recommandation_de_livres.config import PROCESSED_DATA_DIR, MODELS_DIR
 from recommandation_de_livres.iads.utils import stars
 from recommandation_de_livres.loaders.load_data import load_pkl, load_parquet
-from recommandation_de_livres.iads.svd_utils import recommandation_collaborative_top_k
+from recommandation_de_livres.iads.collabo_utils import recommandation_collaborative_top_k
 from recommandation_de_livres.iads.content_utils import suggest_titles, recommandation_content_top_k
 
 DIR = "goodreads"

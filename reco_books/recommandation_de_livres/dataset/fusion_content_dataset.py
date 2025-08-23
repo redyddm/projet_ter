@@ -11,6 +11,7 @@ app = typer.Typer()
 
 @app.command()
 def main(
+    ratings_path: Path = PROCESSED_DATA_DIR / "fusion" / "collaborative_dataset.parquet",
     books_path_recommender: Path = PROCESSED_DATA_DIR / "recommender" / "content_dataset.parquet",
     books_path_goodreads: Path = PROCESSED_DATA_DIR / "goodreads" / "content_dataset.parquet",
     output_path_csv: Path = PROCESSED_DATA_DIR / "fusion" / "content_dataset.csv",
@@ -31,10 +32,14 @@ def main(
     if "isbn" in books.columns:
         books.drop_duplicates(subset=["isbn"], inplace=True)
 
-    books['item_id']=books['item_id'].astype(str)
+    ratings=load_data.load_parquet(ratings_path)
 
-    cats = books['item_id'].astype("category")
-    books['item_index'] = cats.cat.codes + 1  
+    books['item_id']=books['item_id'].astype(str)
+    ratings['item_id'] = ratings['item_id'].astype(str)
+
+    ratings_unique = ratings[['item_id', 'item_index']].drop_duplicates('item_id')
+
+    books = books.merge(ratings_unique[['item_id', 'item_index']], on='item_id', how='left')
 
     logger.info(f"Fusion terminée : {len(books)} livres au total.")
 

@@ -39,6 +39,9 @@ def main(
     cats = ratings['user_id'].astype("category")
     ratings['user_index'] = cats.cat.codes + 1  
 
+    cats_item = ratings['item_id'].astype("category")
+    ratings['item_index'] = cats_item.cat.codes + 1 
+
 
     logger.info(f"Fusion terminée : {len(ratings)} notes au total.")
 
