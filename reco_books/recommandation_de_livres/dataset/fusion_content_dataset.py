@@ -33,6 +33,9 @@ def main(
 
     books['item_id']=books['item_id'].astype(str)
 
+    cats = books['item_id'].astype("category")
+    books['item_index'] = cats.cat.codes + 1  
+
     logger.info(f"Fusion terminée : {len(books)} livres au total.")
 
     # Sauvegarde
