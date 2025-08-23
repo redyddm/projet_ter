@@ -31,7 +31,7 @@ def main(
     if "isbn" in books.columns:
         books.drop_duplicates(subset=["isbn"], inplace=True)
 
-    books["item_id"]=books['isbn']
+    books['item_id']=books['item_id'].astype(str)
 
     logger.info(f"Fusion terminée : {len(books)} livres au total.")
 

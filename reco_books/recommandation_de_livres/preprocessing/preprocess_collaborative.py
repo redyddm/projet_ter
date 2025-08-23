@@ -52,7 +52,7 @@ def preprocess_collaborative(ratings, min_rating_book = 10, min_rating_user = 10
 
 def add_book_metadata(ratings_tmp, books):
 
-    books_subset = books[['item_id', 'title', 'authors', 'publisher', 'image_url']]
+    books_subset = books[['item_id', 'isbn', 'title', 'authors', 'publisher', 'image_url']]
 
     ratings_tmp_books = ratings_tmp.merge(books_subset, on='item_id')
 

@@ -15,8 +15,12 @@ dataset_choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2) ")
 
 if dataset_choice == "1":
     DIR = "recommender"
+    description = None
 elif dataset_choice == "2":
     DIR = "goodreads"
+    authors_path: Path = RAW_DATA_DIR / DIR / "authors.csv"
+    categories_path: Path = RAW_DATA_DIR / DIR / "categories.csv"
+    description = "description"
 else:
     raise ValueError("Choix invalide (1 ou 2 attendu)")
 
@@ -34,13 +38,9 @@ def main(
     add_lang_input = input("Ajouter les langues [2] : True (1), False (2) ") or "2"
     add_lang = True if add_lang_input=="1" else False
 
-    if dataset_choice=="2":
-        authors_path: Path = RAW_DATA_DIR / DIR / "authors.csv"
-        categories_path: Path = RAW_DATA_DIR / DIR / "categories.csv"
-        description = "description"
+    if add_lang:
         allowed_langs=['en', 'eng', 'en-US', 'en-GB', 'en-CA']
     else :
-        description = None
         allowed_langs = None
 
     authors = load_data.load_csv(authors_path) if authors_path else None

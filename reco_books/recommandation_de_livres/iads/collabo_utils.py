@@ -3,6 +3,11 @@ import random
 import pandas as pd
 import numpy as np
 
+def rescale_ratings(ratings, new_min=1, new_max=5):
+    old_min = ratings.min()
+    old_max = ratings.max()
+    return ((ratings - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
+
 def get_unrated_item_first_version(user_id, ratings):
     unique_item_id = set(ratings['item_id'])
 
