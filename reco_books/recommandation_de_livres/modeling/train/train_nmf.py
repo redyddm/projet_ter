@@ -37,7 +37,7 @@ def main(
     if choice == "1":
         reader = Reader(rating_scale=(1,10))
 
-    elif choice == "2":
+    elif choice == "2" or choice == "3":
         reader = Reader(rating_scale=(1,5))
 
     data = Dataset.load_from_df(collaborative_df[['user_id','item_id','rating']], reader)
