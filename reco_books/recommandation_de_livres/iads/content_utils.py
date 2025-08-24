@@ -40,8 +40,11 @@ def recommandation_content_top_k(book_title, embeddings, model, books_df, k=5):
     # Calcul des similarités
     similarity = cosine_similarity(book_embedding, embeddings)[0]
 
+    if book_title in books_names:
+        similarity[book_index] = 0  # pour ne pas le sélectionner dans le top-k
+
     # Top k indices
-    top_k_idx = np.argsort(similarity)[-k:][::-1]  # prendre un peu plus pour être sûr
+    top_k_idx = np.argsort(similarity)[-k:][::-1]
 
     # top_k_idx = indices des livres les plus similaires
     sim_scores = similarity[top_k_idx].copy()

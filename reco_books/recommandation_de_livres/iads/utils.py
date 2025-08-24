@@ -166,3 +166,23 @@ def choose_dataset_interactively():
         raise ValueError(f"Choix invalide, entrez un nombre entre 1 et {len(available_dirs)}")
 
     return available_dirs[choice_index - 1]
+
+def imdb_weighted_rating(df, m_quantile=0.75):
+    """
+    Calcule la note pondérée de type IMDB pour un DataFrame books.
+    
+    df doit contenir :
+        - 'average_rating' : note moyenne
+        - 'ratings_count'  : nombre de votes
+    """
+    C = df['average_rating'].mean()
+    m = df['ratings_count'].quantile(m_quantile)
+
+    def weighted(row):
+        v = row['ratings_count']
+        R = row['average_rating']
+        return (v / (v + m)) * R + (m / (v + m)) * C
+
+    df['weighted_rating'] = df.apply(weighted, axis=1)
+    return df
+
