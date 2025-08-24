@@ -8,7 +8,7 @@ import numpy as np
 def build_content_dataset(books, authors=None, categories=None, dataset_dir=None,
                           title_col="title", desc_col=None,
                           authors_col="authors", book_id_col="item_id",
-                          lang_col="language", add_language=False, allowed_langs=None):
+                          lang_col="language", add_language=False, get_description=False, allowed_langs=None):
     """
     Build content dataset uniformisé avec :
     - mapping des auteurs
@@ -29,7 +29,7 @@ def build_content_dataset(books, authors=None, categories=None, dataset_dir=None
     if categories is not None:
         books = add_genres_str_column(books, categories, book_id_col="book_id")
 
-    if desc_col is None:
+    if desc_col is None and get_description:
         books = get_infos(books)
         desc_col="description"
         catego_col="categories"
