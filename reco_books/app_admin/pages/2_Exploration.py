@@ -6,13 +6,10 @@ import missingno as msno
 import numpy as np
 from pathlib import Path
 
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from recommandation_de_livres.loaders.load_data import load_csv
-from recommandation_de_livres.config import INTERIM_DATA_DIR
+from recommandation_de_livres.config import INTERIM_DATA_DIR, RAW_DATA_DIR
 
+# --- Dossier raw pour les datasets "personnels"
 DATA_DIR = Path("data/raw")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -25,27 +22,23 @@ def load_books(path):
 @st.cache_data
 def load_ratings(path):
     return load_csv(path)
+
 # ---------------------------
 # Interface principale
 # ---------------------------
-st.title("📚 Exploration des données")
 
-# --- Choix du dataset global ---
-choice = st.selectbox("Choix du dataset :", ["Recommender", "Goodreads", "Personnel"], index=0)
+DIR = st.session_state['DIR']
 
-if choice.startswith("Personnel"):
-    book_path = DATA_DIR / "books_uniform.csv"
-    rating_path = DATA_DIR / "ratings_uniform.csv"
-    
-else:
-
-    if choice.startswith("Recommender"):
-        DIR = "recommender" 
-    elif  choice.startswith("Goodreads"):
-        DIR = "goodreads"
+st.title(f"📚 Exploration des données - {DIR}")
 
 book_path = INTERIM_DATA_DIR / DIR / "books_uniform.csv"
 rating_path = INTERIM_DATA_DIR / DIR / "ratings_uniform.csv"
+
+if not book_path.exists() or not rating_path.exists():
+    st.error(f"Le dataset '{DIR}' n'a pas encore été uniformisé. "
+             f"Assurez-vous que 'books_uniform.csv' et 'ratings_uniform.csv' existent dans {INTERIM_DATA_DIR / DIR}")
+    st.stop()
+    
 # --- Sidebar ---
 st.sidebar.title("Exploration EDA")
 dataset_choice = st.sidebar.selectbox("Choix du type de dataset", ["books", "ratings"])
@@ -58,9 +51,8 @@ else:
 
 # --- Tabs ---
 tab1, tab2, tab3, tab4 = st.tabs(
-    ["Aperçu", "Top livres", "Top auteurs", "Distibution des notes"]
+    ["Aperçu", "Top livres", "Top auteurs", "Distribution des notes"]
 )
-
 # --- Tab 1 : Aperçu ---
 with tab1:
     st.subheader(f"Aperçu du dataset {dataset_choice}")

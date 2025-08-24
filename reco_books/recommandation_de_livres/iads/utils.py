@@ -4,7 +4,9 @@ import requests
 from fast_langdetect import detect
 from lingua import Language, LanguageDetectorBuilder
 from pathlib import Path
-from recommandation_de_livres.config import PROCESSED_DATA_DIR
+import streamlit as st
+
+from recommandation_de_livres.config import RAW_DATA_DIR, PROCESSED_DATA_DIR
 
 
 def save_df_to_csv(df: pd.DataFrame, filepath: str, index: bool = False):
@@ -41,96 +43,6 @@ def stars(rating: float, max_stars: int = 5) -> str:
     empty_stars = max_stars - full_stars - int(half_star)
 
     return "⭐" * full_stars + ("✨" if half_star else "") + "☆" * empty_stars
-
-def stars_html(rating: float, max_stars: int = 5) -> str:
-    full_stars = int(rating)
-    half_star = rating - full_stars >= 0.5
-    empty_stars = max_stars - full_stars - int(half_star)
-
-    html = ""
-    html += '<i style="color: gold;">' + "&#9733;" * full_stars + "</i>"
-    if half_star:
-        html += '<i style="color: gold;">&#189;</i>'  # ou une icône demi-étoile
-    html += '<i style="color: lightgray;">' + "&#9733;" * empty_stars + "</i>"
-    return html
-
-def stars_final(rating: float, max_stars: int = 5) -> str:
-    full_stars = int(rating)
-    half_star = rating - full_stars >= 0.5
-    empty_stars = max_stars - full_stars - int(half_star)
-
-    stars_html = (
-        '<span style="color: gold; font-size: 24px;">' + '★' * full_stars + '</span>' +
-        ('<span style="color: gold; font-size: 24px;">☆</span>' if half_star else '') +
-        '<span style="color: lightgray; font-size: 24px;">' + '★' * empty_stars + '</span>'
-    )
-
-    return stars_html
-
-# ---- CSS pour les étoiles cliquables ----
-STAR_STYLE = """
-<style>
-.star-rating {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 36px;
-    cursor: pointer;
-}
-.star {
-    color: #ccc;
-    transition: color 0.2s ease-in-out;
-}
-.star.full {
-    color: #FFA41C;
-}
-.star.half {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-}
-.star.half span:first-child {
-    color: #FFA41C;
-    width: 50%;
-    overflow: hidden;
-    display: inline-block;
-    text-align: left;
-    position: absolute;
-    left: 0;
-}
-.star.half span:last-child {
-    color: #ccc;
-    position: absolute;
-}
-</style>
-"""
-# ---- Fonction pour afficher les étoiles dynamiquement ----
-def render_stars(rating, max_stars=5):
-    stars_html = '<div class="star-rating">'
-    for i in range(1, max_stars + 1):
-        if rating >= i:
-            stars_html += f'<span class="star full">&#9733;</span>'
-        elif rating + 0.5 >= i:
-            stars_html += '''
-            <span class="star half">
-                <span>&#9733;</span>
-                <span>&#9733;</span>
-            </span>
-            '''
-        else:
-            stars_html += '<span class="star">&#9733;</span>'
-    stars_html += '</div>'
-    return stars_html
-
-# ---- Sélection cliquable (demi-étoiles incluses) ----
-"""def star_selector(label, max_stars=5):
-    steps = [i * 0.5 for i in range(1, max_stars * 2 + 1)]
-    rating = st.radio(label, steps, horizontal=True, format_func=lambda x: f"{x} ★")
-    st.markdown(render_stars(rating, max_stars), unsafe_allow_html=True)
-    return rating"""
 
 languages = [Language.ENGLISH, Language.FRENCH, Language.GERMAN, Language.SPANISH]
 detector = LanguageDetectorBuilder.from_languages(*languages).build()
@@ -186,3 +98,46 @@ def imdb_weighted_rating(df, m_quantile=0.75):
     df['weighted_rating'] = df.apply(weighted, axis=1)
     return df
 
+def choose_dataset_streamlit(raw=True):
+    """
+    Liste dynamiquement les datasets et fichiers dans RAW_DATA_DIR ou PROCESSED_DATA_DIR
+    et retourne le chemin du fichier sélectionné.
+    """
+    base_path = Path(RAW_DATA_DIR) if raw else Path(PROCESSED_DATA_DIR)
+
+    # Lister les datasets
+    datasets = [d for d in base_path.iterdir() if d.is_dir()]
+    if not datasets:
+        st.error(f"Aucun dataset trouvé dans {base_path}")
+        st.stop()
+
+    # Choix du dataset
+    selected_dataset = st.selectbox("Sélectionnez un dataset :", [d.name for d in datasets])
+    dataset_path = [d for d in datasets if d.name == selected_dataset][0]
+
+    st.session_state['DIR']=selected_dataset
+    st.session_state['dataset_path']=dataset_path
+
+    return datasets
+
+def display_files_dataset(raw=True):
+    """
+    Liste dynamiquement les datasets et fichiers dans RAW_DATA_DIR ou PROCESSED_DATA_DIR
+    et retourne le chemin du fichier sélectionné.
+    """
+
+    datasets=choose_dataset_streamlit(raw=raw)
+
+    # Choix du dataset
+    dataset_path = st.session_state['dataset_path']
+
+    # Lister les fichiers disponibles
+    files = list(dataset_path.glob("*.csv")) + list(dataset_path.glob("*.parquet"))
+    if not files:
+        st.warning("Aucun fichier CSV/Parquet dans ce dataset.")
+        st.stop()
+
+    # Choix du fichier
+    selected_file = st.selectbox("Sélectionnez un fichier :", [f.name for f in files])
+
+    return dataset_path / selected_file
