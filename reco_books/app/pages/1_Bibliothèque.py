@@ -1,26 +1,15 @@
 import streamlit as st
 from pathlib import Path
-from recommandation_de_livres.iads.utils import stars
-from recommandation_de_livres.loaders.load_data import load_csv
+from recommandation_de_livres.iads.utils import stars, stars_html
 
 # ---- Répertoire des données ----
-DATA_DIR = Path("data/raw")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+DIR = st.session_state['DIR']
 
-# ---- Fonction de chargement ----
-@st.cache_data
-def load_books(path):
-    return load_csv(path)
+books = st.session_state["books"].sort_values(by='title')
+ratings = st.session_state["ratings"]
+users = st.session_state["users"]
 
-# ---- Titre de la page ----
-st.title("🔍 Explorer tous les livres")
-
-# ---- Chargement des données ----
-if "books" not in st.session_state:
-    books_path = DATA_DIR / "books_uniform.csv"  # à adapter selon ton dataset
-    st.session_state["books"] = load_books(books_path)
-
-books = st.session_state["books"]
+st.info(f"Dataset {DIR} chargé.")
 
 # ---- Filtres et recherche ----
 search_title = st.text_input("🔎 Rechercher par titre :")
@@ -73,21 +62,49 @@ end_idx = min(start_idx + books_per_page, len(filtered_books))
 books_page = filtered_books.iloc[start_idx:end_idx]
 
 # ---- Affichage ----
+import pandas as pd
+
+def safe_get(book, key, default="Inconnue"):
+    """Retourne la valeur du champ ou le défaut si None/NaN."""
+    val = book.get(key, default) if isinstance(book, dict) else book.get(key, default)
+    if pd.isna(val):
+        return default
+    return val
+
+def safe_year(book, key="year", default="Inconnue"):
+    """
+    Retourne l'année sous forme d'entier si possible,
+    sinon le défaut.
+    """
+    val = book.get(key, default) if isinstance(book, dict) else book.get(key, default)
+    
+    # Vérifie NaN ou None
+    if pd.isna(val):
+        return default
+    
+    # Essaie de convertir en int
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return default
+
+
+# Exemple d'intégration dans ta boucle
 for row in range(0, len(books_page), books_per_row):
     cols = st.columns(books_per_row)
     for i, (_, book) in enumerate(books_page.iloc[row:row + books_per_row].iterrows()):
         col = cols[i % books_per_row]
         with col:
-            st.image(book.get("image_url", "https://via.placeholder.com/150"), width=120)
-            st.markdown(f"**{book.get('title', 'Titre inconnu')}**")
-            st.caption(book.get("authors", "Auteur inconnu"))
+            st.image(safe_get(book, "image_url", "https://via.placeholder.com/150"), width=120)
+            st.markdown(f"**{safe_get(book, 'title', 'Titre inconnu')}**")
+            st.caption(safe_get(book, "authors", "Auteur inconnu"))
             if "average_rating" in book:
-                st.markdown(stars(book.get("average_rating", 0)))
+                st.markdown(stars_html(safe_get(book, "average_rating", 0)), unsafe_allow_html=True)
 
             with st.expander("📖 Voir détails"):
-                st.write(f"**Auteur(s) :** {book.get('authors', 'Inconnu')}")
-                st.write(f"**Éditeur :** {book.get('publisher', 'Inconnu')}")
-                st.write(f"**Année :** {book.get('year', 'Inconnue')}")
-                st.write(f"**ISBN :** {book.get('isbn') or book.get('item_id') or 'N/A'}")
+                st.write(f"**Auteur(s) :** {safe_get(book, 'authors')}")
+                st.write(f"**Éditeur :** {safe_get(book, 'publisher')}")
+                st.write(f"**Année :** {safe_year(book, 'year')}")
+                st.write(f"**ISBN :** {safe_get(book, 'isbn', safe_get(book, 'item_id', 'N/A'))}")
                 st.markdown("**Description :**")
-                st.write(book.get("description", "Pas de description disponible."))
+                st.write(safe_get(book, "description", "Pas de description disponible."))

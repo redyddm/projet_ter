@@ -1,11 +1,9 @@
 import ast
 from tqdm import tqdm
 import pandas as pd
-from langdetect import detect, DetectorFactory
+from recommandation_de_livres.iads.utils import detect_lang
 from recommandation_de_livres.iads.text_cleaning import nettoyage_avance
 from open_library.openlibrary_extract import *
-
-DetectorFactory.seed = 0
 
 def str_to_list(s):
     if isinstance(s, str):
@@ -22,21 +20,18 @@ def list_to_str_cate(lst):
         return ', '.join(str(x) for x in lst)
     return str(lst)
 
-
-def detect_language(text):
-    try:
-        return detect(text)
-    except:
-        return "unknown"
-
 def filter_books_basic(books, title_col="title", desc_col="description", lang_col=None, allowed_langs=None):
     """
     Filtre les livres vides ou non anglais.
     allowed_langs: liste de codes de langue (ex: ['en', 'eng', 'en-US'])
     """
     books = books.copy()
-    # Filtre sur titre et description
-    books = books.dropna(subset=[title_col, desc_col])
+    
+    # Supprime les titres NaN ou vides
+    books = books[books[title_col].notna() & (books[title_col].str.strip() != "")]
+    
+    # Supprime les descriptions NaN ou vides
+    books = books[books[desc_col].notna() & (books[desc_col].str.strip() != "")]
     
     # Filtre sur langue si la colonne est fournie
     if lang_col and allowed_langs:
@@ -63,9 +58,13 @@ def add_language_column(books, title_col="title", desc_col="description", lang_c
     
     tqdm.pandas(desc="Détection de la langue")
     mask = books[lang_col].isna()
+
+    # Si on veut ajouter les descriptions
+    #books.loc[mask, title_col].fillna('') + ' ' + books.loc[mask, desc_col].fillna('')
+
     books.loc[mask, lang_col] = (
-        (books.loc[mask, title_col].fillna('') + ' ' + books.loc[mask, desc_col].fillna(''))
-        .progress_apply(detect_language)
+        (books.loc[mask, title_col].fillna(''))
+        .progress_apply(detect_lang)
     )
     return books
 
@@ -83,8 +82,8 @@ def get_infos(books):
 
     books['categories'] = categories 
 
-    books['description'] = books['description'].apply(list_to_str)
-    books['categories'] = books['categories'].apply(list_to_str)
+    books['description'] = books['description'].apply(list_to_str_desc)
+    books['categories'] = books['categories'].apply(list_to_str_cate)
 
     return books
 

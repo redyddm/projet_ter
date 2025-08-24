@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 import requests
+from fast_langdetect import detect
+from lingua import Language, LanguageDetectorBuilder
 
 
 def save_df_to_csv(df: pd.DataFrame, filepath: str, index: bool = False):
@@ -37,3 +39,104 @@ def stars(rating: float, max_stars: int = 5) -> str:
     empty_stars = max_stars - full_stars - int(half_star)
 
     return "⭐" * full_stars + ("✨" if half_star else "") + "☆" * empty_stars
+
+def stars_html(rating: float, max_stars: int = 5) -> str:
+    full_stars = int(rating)
+    half_star = rating - full_stars >= 0.5
+    empty_stars = max_stars - full_stars - int(half_star)
+
+    html = ""
+    html += '<i style="color: gold;">' + "&#9733;" * full_stars + "</i>"
+    if half_star:
+        html += '<i style="color: gold;">&#189;</i>'  # ou une icône demi-étoile
+    html += '<i style="color: lightgray;">' + "&#9733;" * empty_stars + "</i>"
+    return html
+
+def stars_final(rating: float, max_stars: int = 5) -> str:
+    full_stars = int(rating)
+    half_star = rating - full_stars >= 0.5
+    empty_stars = max_stars - full_stars - int(half_star)
+
+    stars_html = (
+        '<span style="color: gold; font-size: 24px;">' + '★' * full_stars + '</span>' +
+        ('<span style="color: gold; font-size: 24px;">☆</span>' if half_star else '') +
+        '<span style="color: lightgray; font-size: 24px;">' + '★' * empty_stars + '</span>'
+    )
+
+    return stars_html
+
+# ---- CSS pour les étoiles cliquables ----
+STAR_STYLE = """
+<style>
+.star-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 36px;
+    cursor: pointer;
+}
+.star {
+    color: #ccc;
+    transition: color 0.2s ease-in-out;
+}
+.star.full {
+    color: #FFA41C;
+}
+.star.half {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+.star.half span:first-child {
+    color: #FFA41C;
+    width: 50%;
+    overflow: hidden;
+    display: inline-block;
+    text-align: left;
+    position: absolute;
+    left: 0;
+}
+.star.half span:last-child {
+    color: #ccc;
+    position: absolute;
+}
+</style>
+"""
+# ---- Fonction pour afficher les étoiles dynamiquement ----
+def render_stars(rating, max_stars=5):
+    stars_html = '<div class="star-rating">'
+    for i in range(1, max_stars + 1):
+        if rating >= i:
+            stars_html += f'<span class="star full">&#9733;</span>'
+        elif rating + 0.5 >= i:
+            stars_html += '''
+            <span class="star half">
+                <span>&#9733;</span>
+                <span>&#9733;</span>
+            </span>
+            '''
+        else:
+            stars_html += '<span class="star">&#9733;</span>'
+    stars_html += '</div>'
+    return stars_html
+
+# ---- Sélection cliquable (demi-étoiles incluses) ----
+"""def star_selector(label, max_stars=5):
+    steps = [i * 0.5 for i in range(1, max_stars * 2 + 1)]
+    rating = st.radio(label, steps, horizontal=True, format_func=lambda x: f"{x} ★")
+    st.markdown(render_stars(rating, max_stars), unsafe_allow_html=True)
+    return rating"""
+
+languages = [Language.ENGLISH, Language.FRENCH, Language.GERMAN, Language.SPANISH]
+detector = LanguageDetectorBuilder.from_languages(*languages).build()
+
+def detect_lang(text, chunk_size=100):
+    try:
+        lang=detector.detect_language_of(text)
+        return lang.iso_code_639_3.name.lower()
+    
+    except Exception as e:
+        return ""

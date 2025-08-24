@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from pathlib import Path
 
 import sys
 import os
@@ -11,6 +12,47 @@ from recommandation_de_livres.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, IN
 
 st.set_page_config(page_title="Accueil", layout="wide", page_icon="📚")
 
+choice = st.selectbox("Choix du dataset :", ["Recommender", "Goodreads", "Personnel"], index=0)
+
+@st.cache_data
+def load_books(dir_name):
+    return load_parquet(PROCESSED_DATA_DIR / dir_name / "content_dataset.parquet")
+
+@st.cache_data
+def load_ratings(dir_name):
+    return load_parquet(PROCESSED_DATA_DIR / dir_name / "collaborative_dataset.parquet")
+
+@st.cache_data
+def load_users(dir_name):
+    return load_csv(PROCESSED_DATA_DIR / dir_name / "users.csv")
+
+# Déterminer le DIR en fonction du choix
+if choice.startswith("Personnel"):
+    DATA_DIR = Path("data/raw")
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    book_path = DATA_DIR / "books_uniform.csv"
+    rating_path = DATA_DIR / "ratings_uniform.csv"
+else:
+    if choice.startswith("Recommender"):
+        DATA_DIR = "recommender"
+    elif choice.startswith("Goodreads"):
+        DATA_DIR = "goodreads"
+
+# Charger les données après avoir déterminé DIR
+if st.button("Charger les données"):
+    if choice.startswith("Personnel"):
+        st.session_state["books"] = pd.read_csv(book_path)
+        st.session_state["ratings"] = pd.read_csv(rating_path)
+    else:
+        st.session_state["books"] = load_books(DATA_DIR)
+        st.session_state["ratings"] = load_ratings(DATA_DIR)
+        st.session_state["users"] = load_users(DATA_DIR)
+
+    st.session_state["DIR"]=DATA_DIR
+
+# ---------------------------
+# Session state : init
+# ---------------------------
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
     st.session_state["username"] = None
@@ -57,6 +99,6 @@ else:
     - 📚 Gérer votre collection
     """)
     if "page_num" in st.session_state:
-        st.session_state["page_num"] = 0
+        st.session_state["page_num"] = 1
         st.session_state["prev_clicked"] = False
         st.session_state["next_clicked"] = False

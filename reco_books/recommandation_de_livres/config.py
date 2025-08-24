@@ -22,8 +22,8 @@ REPORTS_DIR = PROJ_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 
 DB_PARAMS = {
-    "user": "XXX",
-    "password": "XXX",
+    "user": "postgres",
+    "password": "redsql",
     "host": "localhost",
     "dbname": "Library"
 }

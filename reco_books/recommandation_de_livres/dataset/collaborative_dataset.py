@@ -37,7 +37,7 @@ def main(
     ratings = load_data.load_parquet(ratings_path)
 
     logger.info("Building a collaborative filtering dataset...")
-    ratings_df = build_collaborative_dataset.build_collaborative_dataset(books, ratings, authors=authors, min_ratings=50, min_users_interaction=100)
+    ratings_df = build_collaborative_dataset.build_collaborative_dataset(books, ratings, authors=authors, min_ratings=0, min_users_interaction=100)
 
     logger.info(f"Saving processed dataset to {output_path} and {output_path_parquet}")
     create_users_file(output_path, output_users)

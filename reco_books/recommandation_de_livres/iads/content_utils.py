@@ -1,5 +1,4 @@
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
 
 import numpy as np
 import gensim
@@ -13,6 +12,7 @@ def get_text_vector(text, model):
         return np.zeros(model.vector_size)
     
 def get_book_embedding(book_title, model):
+    from sentence_transformers import SentenceTransformer
     if isinstance(model, gensim.models.Word2Vec):
         tokens = gensim.utils.simple_preprocess(book_title)
         vec = get_text_vector(tokens, model).reshape(1, -1)

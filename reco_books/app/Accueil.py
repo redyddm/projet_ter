@@ -1,54 +1,40 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
+import sys, os
 
-import sys
-import os
-
+# Import modules internes
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from recommandation_de_livres.loaders.load_data import load_parquet, load_csv
-from recommandation_de_livres.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, INTERIM_DATA_DIR
+from recommandation_de_livres.config import PROCESSED_DATA_DIR
 
+# ---------------------------
+# Config Streamlit
+# ---------------------------
 st.set_page_config(page_title="Accueil", layout="wide", page_icon="📚")
 
-DATA_DIR = Path("data/raw")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-choice = st.selectbox("Choix du dataset :", ["Recommender", "Goodreads", "Personnel"], index=0)
-
-@st.cache_data
-def load_books(dir_name):
-    return load_parquet(PROCESSED_DATA_DIR / dir_name / "content_dataset.parquet")
+# ---------------------------
+# Chargement automatique des données
+# ---------------------------
+DATA_DIR = "goodreads"  # <-- défini par toi en dur ou dans un fichier config
 
 @st.cache_data
-def load_ratings(dir_name):
-    return load_parquet(PROCESSED_DATA_DIR / dir_name / "collaborative_dataset.parquet")
+def load_books():
+    return load_parquet(PROCESSED_DATA_DIR / DATA_DIR / "content_dataset.parquet")
 
 @st.cache_data
-def load_users(dir_name):
-    return load_csv(PROCESSED_DATA_DIR / dir_name / "users.csv")
+def load_ratings():
+    return load_parquet(PROCESSED_DATA_DIR / DATA_DIR / "collaborative_dataset.parquet")
 
-# Déterminer le DIR en fonction du choix
-if choice.startswith("Personnel"):
-    book_path = DATA_DIR / "books_uniform.csv"
-    rating_path = DATA_DIR / "ratings_uniform.csv"
-    DIR = None  # pas utilisé
-else:
-    if choice.startswith("Recommender"):
-        DIR = "recommender"
-    elif choice.startswith("Goodreads"):
-        DIR = "goodreads"
+@st.cache_data
+def load_users():
+    return load_csv(PROCESSED_DATA_DIR / DATA_DIR / "users.csv")
 
-# Charger les données après avoir déterminé DIR
-if st.button("Charger les données"):
-    if choice.startswith("Personnel"):
-        st.session_state["books"] = pd.read_csv(book_path)
-        st.session_state["ratings"] = pd.read_csv(rating_path)
-    else:
-        st.session_state["books"] = load_books(DIR)
-        st.session_state["ratings"] = load_ratings(DIR)
-        st.session_state["users"] = load_users(DIR)
+
+st.session_state["books"] = load_books()
+st.session_state["ratings"] = load_ratings()
+st.session_state["users"] = load_users()
+st.session_state["DIR"] = DATA_DIR
 
 # ---------------------------
 # Session state : init
@@ -69,19 +55,19 @@ if not st.session_state["logged_in"]:
         users = st.session_state["users"]
         if username_input in users["username"].values:
             user_row = users.loc[users["username"] == username_input].iloc[0]
-            st.session_state["logged_in"] = True
-            st.session_state["username"] = user_row["username"]
-            st.session_state["user_id"] = user_row["user_id"]
-            st.session_state["user_index"] = user_row["user_index"]
+            st.session_state.update({
+                "logged_in": True,
+                "username": user_row["username"],
+                "user_id": user_row["user_id"],
+                "user_index": user_row["user_index"]
+            })
             st.sidebar.success(f"Bienvenue {user_row['username']} 👋")
         else:
             st.sidebar.error("Utilisateur inconnu.")
 else:
     st.sidebar.success(f"✅ Connecté : {st.session_state['username']}")
     if st.sidebar.button("Se déconnecter"):
-        st.session_state["logged_in"] = False
-        st.session_state["username"] = None
-        st.session_state["user_id"] = None
+        st.session_state.update({"logged_in": False, "username": None, "user_id": None})
 
 # ---------------------------
 # Interface principale
@@ -98,7 +84,3 @@ else:
     - ⭐ Voir vos recommandations personnalisées
     - 📚 Gérer votre collection
     """)
-    if "page_num" in st.session_state:
-        st.session_state["page_num"] = 1
-        st.session_state["prev_clicked"] = False
-        st.session_state["next_clicked"] = False

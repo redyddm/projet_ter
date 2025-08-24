@@ -13,16 +13,27 @@ from recommandation_de_livres.iads.text_cleaning import nettoyage_texte, nettoya
 
 app = typer.Typer()
 
-choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2), Fusion (3) ") or "2"
+# Lister tous les dossiers dans PROCESSED_DATA_DIR
+available_dirs = [d.name for d in PROCESSED_DATA_DIR.iterdir() if d.is_dir()]
 
-if choice == "1":
-    DIR = "recommender"
-elif choice == "2":
-    DIR = "goodreads"
-elif choice == "3":
-    DIR = "fusion"
-else:
-    raise ValueError("Choix invalide (1, 2 ou 3 attendu)")
+if not available_dirs:
+    raise ValueError(f"Aucun dataset trouvé dans {PROCESSED_DATA_DIR}")
+
+# Afficher les choix à l'utilisateur
+print("Choisissez un dataset :")
+for i, name in enumerate(available_dirs, 1):
+    print(f"{i}. {name}")
+
+choice_index = input(f"Votre choix [1-{len(available_dirs)}] : ") or "1"
+try:
+    choice_index = int(choice_index)
+    if choice_index < 1 or choice_index > len(available_dirs):
+        raise ValueError
+except ValueError:
+    raise ValueError(f"Choix invalide, entrez un nombre entre 1 et {len(available_dirs)}")
+
+DIR = available_dirs[choice_index - 1]
+print(f"Dataset choisi : {DIR}")
 
 @app.command()
 def main(

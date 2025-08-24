@@ -22,8 +22,8 @@ def build_content_dataset(books, authors=None, categories=None, dataset_dir=None
         books = map_author_names(books, authors, authors_col=authors_col)
 
     # --- Sauvegarde intermédiaire après mapping auteurs ---
-    save_df_to_csv(books, dataset_dir / "books_authors.csv")
-    save_df_to_parquet(books, dataset_dir / "books_authors.parquet")
+    #save_df_to_csv(books, dataset_dir / "books_authors.csv")
+    #save_df_to_parquet(books, dataset_dir / "books_authors.parquet")
 
     # --- Ajout des catégories si fourni ---
     if categories is not None:

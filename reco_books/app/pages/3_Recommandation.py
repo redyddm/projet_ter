@@ -14,7 +14,7 @@ from recommandation_de_livres.loaders.load_data import load_pkl, load_parquet
 from recommandation_de_livres.iads.collabo_utils import recommandation_collaborative_top_k
 from recommandation_de_livres.iads.content_utils import suggest_titles, recommandation_content_top_k
 
-DIR = "fusion"
+DIR = st.session_state['DIR']
 
 # ---------------------------
 # Vérifier connexion
@@ -26,6 +26,8 @@ if not st.session_state.get("logged_in", False):
 books = st.session_state["books"]
 ratings = st.session_state["ratings"]
 users = st.session_state["users"]
+
+st.info(f"Dataset {DIR} chargé.")
 
 @st.cache_data
 def load_content():

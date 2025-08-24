@@ -1,5 +1,6 @@
 import streamlit as st
-from recommandation_de_livres.iads.utils import stars
+from recommandation_de_livres.iads.utils import stars, stars_html, stars_final
+from recommandation_de_livres.iads.collabo_utils import rescale_ratings
 
 
 if not st.session_state.get("logged_in", False):
@@ -9,13 +10,13 @@ if not st.session_state.get("logged_in", False):
 st.title("📚 Ma Collection")
 
 # Vérifier que les données sont chargées
-if "books_gdr" not in st.session_state or "ratings_gdr" not in st.session_state:
+if "books" not in st.session_state or "ratings" not in st.session_state:
     st.error("❌ Les données ne sont pas chargées. Retournez à l’accueil.")
     st.stop()
 
-books = st.session_state["books_gdr"]
-ratings = st.session_state["ratings_gdr"]
-users = st.session_state["users_gdr"]    
+books = st.session_state["books"]
+ratings = st.session_state["ratings"]
+users = st.session_state["users"]    
 
 user_index = st.session_state['user_index']
 user_id = st.session_state["user_id"]
@@ -34,6 +35,7 @@ if st.session_state.get("logged_in", False):
 
 # --- Affichage bibliothèque ---
 books_user = ratings[ratings["user_index"] == user_index]
+ratings['rating']=rescale_ratings(ratings['rating'], 1, 5)
 
 if books_user.empty:
     st.info("📭 Aucun livre trouvé pour cet utilisateur.")
@@ -80,7 +82,7 @@ else:
         with col:
             st.image(book.get("image_url", "https://via.placeholder.com/150"), width=120)
             st.markdown(f"**{book.get('title', 'Titre inconnu')}**")
-            st.markdown(stars(book.get("rating", 0)))
+            st.markdown(stars_html(book.get("rating", 0)), unsafe_allow_html=True)
             st.caption(book.get("authors", "Auteur inconnu"))
 
             with st.expander("📖 Voir détails"):
