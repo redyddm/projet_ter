@@ -1,56 +1,45 @@
 import streamlit as st
 import pandas as pd
-from pathlib import Path
-import sys, os
 
-# Import modules internes
+import sys
+import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from recommandation_de_livres.loaders.load_data import load_parquet, load_csv
+
 from recommandation_de_livres.config import PROCESSED_DATA_DIR
+from recommandation_de_livres.loaders.load_data import load_csv, load_parquet
+
+DATA_DIR = "goodreads"
+
+st.session_state['DIR']=DATA_DIR
 
 # ---------------------------
-# Config Streamlit
+# Chargement des données si pas déjà en session
 # ---------------------------
-st.set_page_config(page_title="Accueil", layout="wide", page_icon="📚")
-
-# ---------------------------
-# Chargement automatique des données
-# ---------------------------
-DATA_DIR = "goodreads"  # <-- défini par toi en dur ou dans un fichier config
-
-@st.cache_data
-def load_books():
-    return load_parquet(PROCESSED_DATA_DIR / DATA_DIR / "content_dataset.parquet")
-
-@st.cache_data
-def load_ratings():
-    return load_parquet(PROCESSED_DATA_DIR / DATA_DIR / "collaborative_dataset.parquet")
-
-@st.cache_data
-def load_users():
-    return load_csv(PROCESSED_DATA_DIR / DATA_DIR / "users.csv")
-
-
-st.session_state["books"] = load_books()
-st.session_state["ratings"] = load_ratings()
-st.session_state["users"] = load_users()
-st.session_state["DIR"] = DATA_DIR
+if "books" not in st.session_state:
+    st.session_state["books"] = load_parquet(PROCESSED_DATA_DIR / DATA_DIR / "content_dataset.parquet")
+if "ratings" not in st.session_state:
+    st.session_state["ratings"] = load_parquet(PROCESSED_DATA_DIR / DATA_DIR / "collaborative_dataset.parquet")
+if "users" not in st.session_state:
+    st.session_state["users"] = load_csv(PROCESSED_DATA_DIR / DATA_DIR / "users.csv")
 
 # ---------------------------
-# Session state : init
+# Initialisation session
 # ---------------------------
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
-    st.session_state["username"] = None
-    st.session_state["user_id"] = None
+for key in ["logged_in", "username", "user_id", "user_index"]:
+    if key not in st.session_state:
+        st.session_state[key] = None
+st.session_state["logged_in"] = st.session_state["logged_in"] or False
 
 # ---------------------------
-# Sidebar : Connexion
+# Sidebar : Connexion / Création / Déconnexion
 # ---------------------------
-st.sidebar.title("🔑 Connexion")
+st.sidebar.title("🔑 Utilisateur")
 
 if not st.session_state["logged_in"]:
-    username_input = st.sidebar.text_input("Nom d’utilisateur (userX)")
+    # ----------------- Connexion -----------------
+    st.sidebar.subheader("Se connecter")
+    username_input = st.sidebar.text_input("Nom d’utilisateur", key="login_username")
     if st.sidebar.button("Se connecter"):
         users = st.session_state["users"]
         if username_input in users["username"].values:
@@ -62,12 +51,43 @@ if not st.session_state["logged_in"]:
                 "user_index": user_row["user_index"]
             })
             st.sidebar.success(f"Bienvenue {user_row['username']} 👋")
+            st.rerun()  # Recharger la page immédiatement pour cacher le formulaire
         else:
             st.sidebar.error("Utilisateur inconnu.")
+
+    # --------------- Création utilisateur ---------------
+    st.sidebar.subheader("Créer un nouvel utilisateur")
+    with st.sidebar.form("create_user_form"):
+        new_username = st.text_input("Nom d’utilisateur", key="create_username")
+        submitted = st.form_submit_button("Créer l'utilisateur")
+        if submitted:
+            users_df = st.session_state["users"]
+            if new_username in users_df["username"].values:
+                st.sidebar.error("Ce nom d’utilisateur existe déjà.")
+            else:
+                existing_indices = users_df["user_index"].tolist()
+                new_user_index = max(existing_indices) + 1 if existing_indices else 0
+                new_user_id = f"user_{new_user_index + 1}"
+
+                new_user = pd.DataFrame([{
+                    "user_id": new_user_id,
+                    "username": new_username,
+                    "user_index": new_user_index
+                }])
+
+                st.session_state["users"] = pd.concat([users_df, new_user], ignore_index=True)
+                users_df_path = PROCESSED_DATA_DIR / DATA_DIR / "users.csv"
+                st.session_state["users"].to_csv(users_df_path, index=False)
+                st.sidebar.success(f"Utilisateur {new_username} créé ! Connectez-vous maintenant.")
+
 else:
-    st.sidebar.success(f"✅ Connecté : {st.session_state['username']}")
+    # ----------------- Déconnexion -----------------
+    st.sidebar.success(f"Connecté en tant que {st.session_state['username']} 👋")
     if st.sidebar.button("Se déconnecter"):
-        st.session_state.update({"logged_in": False, "username": None, "user_id": None})
+        for key in ["logged_in", "username", "user_id", "user_index"]:
+            st.session_state[key] = None
+        st.rerun()  # Recharger la page pour afficher les formulaires de connexion/création
+
 
 # ---------------------------
 # Interface principale
@@ -77,10 +97,17 @@ st.title("📚 Bienvenue dans l'application de recommandations de livres")
 if not st.session_state["logged_in"]:
     st.info("👉 Connectez-vous depuis la barre latérale pour accéder à vos recommandations et à votre collection.")
 else:
-    st.success(f"Bonjour {st.session_state['username']} ! 🎉")
+    username = st.session_state["username"]
+    user_index = st.session_state["user_index"]
+    st.success(f"Bonjour {username} ! 🎉")
+
     st.write("""
     Vous pouvez maintenant accéder aux fonctionnalités suivantes depuis le menu de gauche :
-    - 📖 Explorer vos livres
-    - ⭐ Voir vos recommandations personnalisées
+    - 📖 Consulter la bibliothèque
     - 📚 Gérer votre collection
+    - ⭐ Voir vos recommandations personnalisées
     """)
+    if "page_num" in st.session_state:
+        st.session_state["page_num"] = 1
+        st.session_state["prev_clicked"] = False
+        st.session_state["next_clicked"] = False

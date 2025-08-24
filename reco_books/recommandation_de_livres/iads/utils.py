@@ -3,6 +3,8 @@ import pandas as pd
 import requests
 from fast_langdetect import detect
 from lingua import Language, LanguageDetectorBuilder
+from pathlib import Path
+from recommandation_de_livres.config import PROCESSED_DATA_DIR
 
 
 def save_df_to_csv(df: pd.DataFrame, filepath: str, index: bool = False):
@@ -140,3 +142,27 @@ def detect_lang(text, chunk_size=100):
     
     except Exception as e:
         return ""
+
+def choose_dataset_interactively():
+    """
+    Liste les dossiers dans PROCESSED_DATA_DIR et permet à l'utilisateur de choisir.
+    Retourne le nom du dossier choisi.
+    """
+    available_dirs = [d.name for d in PROCESSED_DATA_DIR.iterdir() if d.is_dir()]
+
+    if not available_dirs:
+        raise ValueError(f"Aucun dataset trouvé dans {PROCESSED_DATA_DIR}")
+
+    print("Choisissez un dataset :")
+    for i, name in enumerate(available_dirs, 1):
+        print(f"{i}. {name}")
+
+    choice_index = input(f"Votre choix [1-{len(available_dirs)}] : ") or "1"
+    try:
+        choice_index = int(choice_index)
+        if choice_index < 1 or choice_index > len(available_dirs):
+            raise ValueError
+    except ValueError:
+        raise ValueError(f"Choix invalide, entrez un nombre entre 1 et {len(available_dirs)}")
+
+    return available_dirs[choice_index - 1]

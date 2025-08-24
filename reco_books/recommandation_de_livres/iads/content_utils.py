@@ -43,11 +43,14 @@ def recommandation_content_top_k(book_title, embeddings, model, books_df, k=5):
     # Top k indices
     top_k_idx = np.argsort(similarity)[-k:][::-1]  # prendre un peu plus pour être sûr
 
+    # top_k_idx = indices des livres les plus similaires
+    sim_scores = similarity[top_k_idx].copy()
+
     # Extraire titres et auteurs
 
     top_books = books_df.iloc[top_k_idx].copy()
 
-    return top_books
+    return top_books, sim_scores
 
 # Pour recherche de titres avec tfidf
 def suggest_titles(query, tfidf, tfidf_matrix, books, k=5):

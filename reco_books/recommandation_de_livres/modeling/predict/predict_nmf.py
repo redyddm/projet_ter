@@ -7,18 +7,13 @@ from tqdm import tqdm
 
 from recommandation_de_livres.config import MODELS_DIR, PROCESSED_DATA_DIR
 from recommandation_de_livres.iads.collabo_utils import recommandation_collaborative_top_k
+from recommandation_de_livres.iads.utils import choose_dataset_interactively
 from recommandation_de_livres.loaders.load_data import load_parquet
 
 app = typer.Typer()
 
-choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2) ") or "2"
-
-if choice == "1":
-    DIR = "recommender"
-elif choice == "2":
-    DIR = "goodreads"
-else:
-    raise ValueError("Choix invalide (1 ou 2 attendu)")
+DIR = choose_dataset_interactively()
+print(f"Dataset choisi : {DIR}")
 
 @app.command()
 def main(

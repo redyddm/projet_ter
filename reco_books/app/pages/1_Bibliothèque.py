@@ -1,41 +1,44 @@
 import streamlit as st
 from pathlib import Path
+import pandas as pd
 from recommandation_de_livres.iads.utils import stars, stars_html
 
 # ---- Répertoire des données ----
 DIR = st.session_state['DIR']
 
-books = st.session_state["books"].sort_values(by='title')
+books = st.session_state["books"]
 ratings = st.session_state["ratings"]
 users = st.session_state["users"]
 
-st.info(f"Dataset {DIR} chargé.")
-
-# ---- Filtres et recherche ----
-search_title = st.text_input("🔎 Rechercher par titre :")
-authors_unique = sorted(books['authors'].dropna().unique())
-categories_unique = sorted(
-    set(cat.strip() for sublist in books['categories'].dropna().str.split(',') for cat in sublist)
+# ---- Options de tri ----
+sort_column = st.selectbox(
+    "Trier par :",
+    ["Titre", "Auteur", "Note moyenne"]
 )
 
-author_filter = st.multiselect("Filtrer par auteur :", authors_unique)
-category_filter = st.multiselect("Filtrer par catégorie :", categories_unique)
+sort_order = st.selectbox(
+    "Ordre :",
+    ["Ascendant", "Descendant"]
+)
 
-filtered_books = books.copy()
+# Mapping pour le DataFrame
+sort_col_map = {
+    "Titre": "title",
+    "Auteur": "authors",
+    "Note moyenne": "average_rating"
+}
 
-# Filtre par titre
-if search_title:
-    filtered_books = filtered_books[filtered_books['title'].str.contains(search_title, case=False, na=False)]
+col_to_sort = sort_col_map[sort_column]
+ascending = True if sort_order == "Ascendant" else False
 
-# Filtre par auteur
-if author_filter:
-    filtered_books = filtered_books[filtered_books['authors'].isin(author_filter)]
+# Préparer DataFrame pour tri
+books_sorted = books.copy()
+if col_to_sort == "average_rating":
+    books_sorted[col_to_sort] = books_sorted[col_to_sort].fillna(0)
+else:
+    books_sorted[col_to_sort] = books_sorted[col_to_sort].fillna("")
 
-# Filtre par catégorie
-if category_filter:
-    filtered_books = filtered_books[filtered_books['categories'].apply(
-        lambda x: any(cat.strip() in category_filter for cat in str(x).split(',')))
-    ]
+books_sorted = books_sorted.sort_values(by=col_to_sort, ascending=ascending)
 
 # ---- Pagination ----
 if "page_num_bibl" not in st.session_state:
@@ -43,7 +46,7 @@ if "page_num_bibl" not in st.session_state:
 
 books_per_row = 5
 books_per_page = 10
-total_pages = (len(filtered_books) - 1) // books_per_page + 1
+total_pages = (len(books_sorted) - 1) // books_per_page + 1
 
 # Navigation
 col1, col2, col3 = st.columns([1, 2, 1])
@@ -58,38 +61,26 @@ with col2:
 
 # Indices de la page
 start_idx = (st.session_state["page_num_bibl"] - 1) * books_per_page
-end_idx = min(start_idx + books_per_page, len(filtered_books))
-books_page = filtered_books.iloc[start_idx:end_idx]
+end_idx = min(start_idx + books_per_page, len(books_sorted))
+books_page = books_sorted.iloc[start_idx:end_idx]
 
-# ---- Affichage ----
-import pandas as pd
-
+# ---- Fonctions utilitaires ----
 def safe_get(book, key, default="Inconnue"):
-    """Retourne la valeur du champ ou le défaut si None/NaN."""
     val = book.get(key, default) if isinstance(book, dict) else book.get(key, default)
     if pd.isna(val):
         return default
     return val
 
 def safe_year(book, key="year", default="Inconnue"):
-    """
-    Retourne l'année sous forme d'entier si possible,
-    sinon le défaut.
-    """
     val = book.get(key, default) if isinstance(book, dict) else book.get(key, default)
-    
-    # Vérifie NaN ou None
     if pd.isna(val):
         return default
-    
-    # Essaie de convertir en int
     try:
         return int(val)
     except (ValueError, TypeError):
         return default
 
-
-# Exemple d'intégration dans ta boucle
+# ---- Affichage ----
 for row in range(0, len(books_page), books_per_row):
     cols = st.columns(books_per_row)
     for i, (_, book) in enumerate(books_page.iloc[row:row + books_per_row].iterrows()):

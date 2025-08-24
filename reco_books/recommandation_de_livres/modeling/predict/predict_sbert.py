@@ -1,30 +1,20 @@
-import os
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
 from pathlib import Path
 import numpy as np
 import pandas as pd
 from loguru import logger
 import typer
-from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
 from recommandation_de_livres.loaders.load_data import load_parquet
 
 from recommandation_de_livres.config import PROCESSED_DATA_DIR, MODELS_DIR
-from recommandation_de_livres.iads.content_utils import get_book_embedding, recommandation_content_top_k
+from recommandation_de_livres.iads.content_utils import recommandation_content_top_k
+from recommandation_de_livres.iads.utils import choose_dataset_interactively
 
 app = typer.Typer()
 
-choice = input("Choix du dataset [2] : Recommender (1), Goodreads (2) ") or "2"
-
-if choice == "1":
-    DIR = "recommender"
-elif choice == "2":
-    DIR = "goodreads"
-else:
-    raise ValueError("Choix invalide (1 ou 2 attendu)")
+DIR = choose_dataset_interactively()
+print(f"Dataset choisi : {DIR}")
 
 @app.command()
 

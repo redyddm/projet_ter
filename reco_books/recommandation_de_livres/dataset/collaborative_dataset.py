@@ -26,6 +26,7 @@ else:
 @app.command()
 def main(
     books_path: Path = INTERIM_DATA_DIR / DIR / "books_uniform.parquet",
+    content_path: Path = PROCESSED_DATA_DIR / DIR / "content_dataset.parquet",
     ratings_path: Path = INTERIM_DATA_DIR / DIR / "ratings_uniform.parquet",
     output_path: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.csv",
     output_path_parquet: Path = PROCESSED_DATA_DIR / DIR / "collaborative_dataset.parquet",
@@ -35,14 +36,19 @@ def main(
     logger.info("Loading raw datasets...")
     books = load_data.load_parquet(books_path)
     ratings = load_data.load_parquet(ratings_path)
+    content_df = load_data.load_parquet(content_path)
 
     logger.info("Building a collaborative filtering dataset...")
-    ratings_df = build_collaborative_dataset.build_collaborative_dataset(books, ratings, authors=authors, min_ratings=0, min_users_interaction=100)
 
+    if content_df is not None:
+        ratings_df = build_collaborative_dataset.build_collaborative_dataset(content_df, ratings, authors=None, min_ratings=0, min_users_interaction=100)
+    else:
+        ratings_df = build_collaborative_dataset.build_collaborative_dataset(books, ratings, authors=authors, min_ratings=0, min_users_interaction=100)
+    
     logger.info(f"Saving processed dataset to {output_path} and {output_path_parquet}")
-    create_users_file(output_path, output_users)
     save_df_to_csv(ratings_df, output_path)
     save_df_to_parquet(ratings_df, output_path_parquet)
+    create_users_file(output_path, output_users)
     logger.success("Processing dataset complete.")
 
 if __name__ == "__main__":

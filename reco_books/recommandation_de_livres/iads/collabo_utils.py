@@ -112,6 +112,6 @@ def recommandation_collaborative_top_k(k, user_id, model, ratings, books):
 
     top_k = pred_ratings.head(k).copy()
 
-    top_k_df = top_k['item_id'].apply(get_book, books=books)
+    top_k_df = top_k['item_id'].apply(get_book, books=ratings)
 
-    return top_k_df
+    return top_k_df, top_k

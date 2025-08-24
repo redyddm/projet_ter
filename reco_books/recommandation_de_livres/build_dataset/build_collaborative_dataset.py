@@ -1,6 +1,5 @@
 from recommandation_de_livres.preprocessing.preprocess_collaborative import preprocess_collaborative, add_book_metadata
 from recommandation_de_livres.preprocessing.preprocess_content import map_author_names
-from recommandation_de_livres.config import INTERIM_DATA_DIR
 
 def build_collaborative_dataset(books, ratings, authors, min_ratings=0, min_users_interaction=0):
 
