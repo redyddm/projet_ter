@@ -46,7 +46,7 @@ def build_content_dataset(books, authors=None, categories=None, dataset_dir=None
 
     # --- Ajout des catégories si fourni ---
     if categories is not None:
-        books = add_genres_str_column(books, categories, book_id_col=book_id_col)
+        books = add_genres_str_column(books, categories, book_id_col="book_id")
 
     # --- Récupération des descriptions si demandé ---
     if desc_col is None and get_description:

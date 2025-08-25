@@ -56,7 +56,8 @@ def main(
 
     tqdm.pandas(desc='Fusion des textes')
 
-    content_df['text_combined'] = content_df.progress_apply(combine_text, axis=1)
+    cols_to_combine = ['title', 'categories', 'description']
+    content_df['text_combined'] = content_df.progress_apply(lambda row: combine_text(row, cols_to_combine), axis=1)
 
     tqdm.pandas(desc='Nettoyage des textes')
     content_df['text_clean'] = content_df['text_combined'].progress_apply(gensim.utils.simple_preprocess)

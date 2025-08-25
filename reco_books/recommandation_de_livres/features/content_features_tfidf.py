@@ -9,7 +9,8 @@ import typer
 from recommandation_de_livres.config import PROCESSED_DATA_DIR
 from recommandation_de_livres.loaders.load_data import load_parquet
 from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_parquet
-from recommandation_de_livres.iads.text_cleaning import nettoyage_texte, nettoyage_avance
+from recommandation_de_livres.iads.text_cleaning import nettoyage_avance
+from recommandation_de_livres.iads.content_utils import combine_text
 
 app = typer.Typer()
 
@@ -49,11 +50,9 @@ def main(
 
     logger.info('Fusionning the texts for TF-IDF...')
 
-    content_df['text_for_tfidf'] = (
-        content_df['title'].fillna('') + " " +
-        content_df['authors'].fillna('')
-    )
-
+    cols_to_combine = ['title', 'authors']
+    content_df['text_combined'] = content_df.progress_apply(lambda row: combine_text(row, cols_to_combine), axis=1)
+    
     logger.info("Cleaning and tokenizing the text...")
 
     tqdm.pandas(desc='Nettoyage des textes')
