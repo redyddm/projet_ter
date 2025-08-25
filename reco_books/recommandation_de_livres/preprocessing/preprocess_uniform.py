@@ -1,12 +1,16 @@
-# preprocess_uniform.py
-import pandas as pd
-from pathlib import Path
-from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle
-
-def rename_ratings_columns(ratings, user_col="User-ID", item_col=None, rating_col="Book-Rating"):
+def rename_ratings_columns(ratings, user_col, rating_col, item_col=None):
     """
     Renomme les colonnes pour uniformiser les datasets utilisateurs.
     Si item_col est None, sera défini plus tard via unify_book_ids.
+    
+    Args:
+        ratings (pd.DataFrame) : DataFrame avec les utilisateurs, livres et leurs notes.
+        user_col (str) : colonne utilisateur à renommer.
+        item_col (str) : colonne livre à renommer.
+        rating_col (str) : colonne note à renommer.
+
+    Returns:
+        pd.DataFrame: DataFrame avec les colonnes renommées.
     """
     ratings = ratings.copy()
     ratings.rename(columns={user_col: "user_id", rating_col: "rating"}, inplace=True)
@@ -28,20 +32,27 @@ def unify_book_ids(df):
             raise ValueError("Le dataset n'a ni 'book_id' ni 'ISBN'.")
     return df
 
-def rename_books_columns(books,
-                         isbn_col=None,
-                         book_id_col=None,
-                         language_col=None,
-                         title_col=None,
-                         author_col=None,
-                         publisher_col=None,
-                         year_col=None,
-                         image_col=None):
+def rename_books_columns(books, book_id_col=None, isbn_col=None, 
+                         language_col=None, title_col=None, 
+                         author_col=None, publisher_col=None, 
+                         year_col=None, image_col=None):
     """
     Renomme les colonnes d'un dataset de livres pour uniformiser.
     Les colonnes peuvent être None si elles n'existent pas.
-    Retourne un dataframe avec les noms standards :
-    'item_id', 'title', 'authors', 'publisher', 'year', 'image_url'
+    Retourne un dataframe avec les noms uniformisés.
+
+    Args:
+        books (pd.DataFrame) : le dataFrame dont les colonnes sont à modifier
+        book_id_col (str) : colonne qui servira en tant qu'item_id
+        isbn_col (str) : colonne isbn qui pourrait servir en tant qu'item_id si book_id_col est None
+        title_col (str) : colonne qui servira en tant que title
+        author_col (str) : colonne qui servira en tant qu'authors
+        publisher_col (str) : colonne qui servira en tant que publisher
+        year_col (str) : colonne qui servira en tant que year
+        image_col (str) : colonne qui servira en tant qu'image_url
+
+    Returns:
+        books (pd.DataFrame) : DataFrame avec les colonnes renommées.
     """
     books = books.copy()
     

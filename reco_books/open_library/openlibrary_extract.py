@@ -3,13 +3,15 @@ import psycopg2
 from tqdm import tqdm
 import re
 
-user='postgres'
-password='redsql'
+user='XXX'
+password='XXX'
 
 def get_key_books_list(isbn_list):
     """ Renvoie une liste de key de la table 'editions' correspondant aux isbn donnés.
-        Arguments :
+        Args:
             isbn_list (str[]) : liste d'isbn
+        Returns:
+            keys_books (str[]) : liste des editions_keys de nos livres
     """
     conn = psycopg2.connect(
         dbname='openlibrary',
@@ -40,6 +42,12 @@ def get_key_books_list(isbn_list):
     return key_books
 
 def update_editions_work_key(keys_list):
+    """ Met à jour la base de données avec les clés données. C'est pour éviter de mettre entièrement la base de données à jour.
+        Args:
+            keys_list (str[]) : liste des clés des données à mettre à jour
+        Returns:
+            None
+    """
     conn = psycopg2.connect(
         dbname='openlibrary',
         user=user,
@@ -70,59 +78,14 @@ def split_subject_words(subject):
     """
     return re.findall(r'\b\w+\b', subject.lower())
 
-def get_used_infos_by_isbn_list(isbn_list):
-    conn = psycopg2.connect(
-        dbname='openlibrary',
-        user=user, 
-        password=password, 
-        host='localhost',
-        port='5432'
-    )
-    conn.autocommit = True
-    cur = conn.cursor()
-
-    # Requête sql permettant de récupérer les genres et descriptions d'un livre via son isbn
-    sql = """
-        select
-        w.data->'description'->>'value' "WorkDescription",
-        e.data->>'isbn_13' "ISBN13"
-    from editions e
-    join edition_isbns ei
-        on ei.edition_key = e.key
-    join works w
-        on w.key = e.work_key
-    where ei.isbn = %s
-    """
-
-    # Comme on peut avoir plusieurs résultats pour un même isbn, 
-    # la requête renverra plusieurs fois des subjects et descriptions (assez souvent identiques)
-    # On traite de ce cas juste après
-    
-    desc_final=[] # liste des descriptions des livres
-    isbn_13=[]
-
-    for isbn in tqdm(isbn_list, desc='Récupération des informations supplémentaires'):
-        cur.execute(sql, (isbn,))
-        results = cur.fetchall()
-
-        # On crée ici des sets pour éviter les doublons lors de l'ajout des descriptions
-        description_set = set()
-        isbn_13_set = set()
-
-        for r in results:   
-            if r[0]:      
-                description_set.add(r[0])
-            isbn_13_set.add(r[1])
-
-        desc_final.append(list(description_set))
-        isbn_13.append(list(isbn_13_set))
-
-    cur.close()
-    conn.close()
-
-    return desc_final, isbn_13
-
 def get_infos_by_isbn_list(isbn_list):
+    """ Permet de récupérer les informations des livres depuis la base de données.
+        Args:
+            isbn_list (str[]) : Liste d'isbn
+        Returns:
+            subjects_final (str[][]) : Liste de listes avec les sujets extraits de chaque livre
+            desc_final (str[][]) : Liste de listes avec les descriptions extraites de chaque livre
+    """
     conn = psycopg2.connect(
         dbname='openlibrary',
         user='postgres', 

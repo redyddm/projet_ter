@@ -6,7 +6,7 @@ import numpy as np
 
 from recommandation_de_livres.loaders import load_data
 from recommandation_de_livres.build_dataset import build_content_dataset
-from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_pickle, save_df_to_parquet
+from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_parquet
 from recommandation_de_livres.config import RAW_DATA_DIR, PROCESSED_DATA_DIR, INTERIM_DATA_DIR
 
 app = typer.Typer()
@@ -41,6 +41,9 @@ def main(
     add_lang_input = input("Ajouter les langues [2] : True (1), False (2) ") or "2"
     add_lang = True if add_lang_input=="1" else False
 
+    update_input = input("Mettre à jour la base de données [2] : True (1), False (2) ") or "2"
+    update = True if update_input=="1" else False
+
     allowed_langs=['en', 'eng', 'en-US', 'en-GB', 'en-CA']
 
     authors = load_data.load_csv(authors_path) if authors_path else None
@@ -55,7 +58,8 @@ def main(
         desc_col=description,
         dataset_dir=INTERIM_DATA_DIR / DIR, 
         allowed_langs=allowed_langs,
-        add_language=add_lang
+        add_language=add_lang,
+        update_db=update
     )
 
     logger.info(f"Saving processed dataset to {output_path_csv} and {output_path_parquet}")

@@ -1,7 +1,5 @@
 import os
-import pandas as pd
 import requests
-from fast_langdetect import detect
 from lingua import Language, LanguageDetectorBuilder
 from pathlib import Path
 import streamlit as st
@@ -9,19 +7,25 @@ import streamlit as st
 from recommandation_de_livres.config import RAW_DATA_DIR, PROCESSED_DATA_DIR
 
 
-def save_df_to_csv(df: pd.DataFrame, filepath: str, index: bool = False):
+def save_df_to_csv(df, filepath, index = False):
+    """ Sauvegarde le dataFrame en csv dans le chemin filepath.
+    """
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     df.to_csv(filepath, index=index, encoding="utf-8")
 
 
-def save_df_to_pickle(df: pd.DataFrame, filepath: str):
+def save_df_to_pickle(df, filepath):
+    """ Sauvegarde le dataFrame en pkl dans le chemin filepath.
+    """
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     df.to_pickle(filepath)
 
 def save_df_to_parquet(df, filepath):
+    """ Sauvegarde le dataFrame en parquet dans le chemin filepath.
+    """
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    import pandas as pd
     df.to_parquet(filepath, engine='pyarrow', index=False, compression='snappy')
+
 
 
 def get_cover_url(isbn):
