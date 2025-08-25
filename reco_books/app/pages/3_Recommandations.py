@@ -138,7 +138,9 @@ if st.button("Rechercher"):
         )
 
     # Merge pour récupérer les colonnes nécessaires comme average_rating
-    cols_to_keep = [c for c in books.columns if c not in top_books.columns or c == "average_rating"]
+    top_books['item_id'] = top_books['item_id'].astype(int)
+
+    cols_to_keep = [c for c in books.columns if c not in top_books.columns]
     top_books_full = top_books.merge(
         books[cols_to_keep + ["item_id"]],
         on="item_id",

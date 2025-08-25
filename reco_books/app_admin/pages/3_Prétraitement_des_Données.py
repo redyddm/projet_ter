@@ -8,6 +8,11 @@ import time
 
 st.set_page_config(page_title="Prétraitement des données", layout="wide", page_icon="🛠️")
 
+
+if 'DIR' not in st.session_state:
+    st.error("⚠️ Aucun dataset sélectionné. Retournez à la page d'accueil pour en choisir un.")
+    st.stop()
+
 # -------------------------------
 # Dataset déjà choisi à l'accueil
 # -------------------------------

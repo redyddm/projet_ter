@@ -10,6 +10,10 @@ from recommandation_de_livres.loaders.load_data import load_csv
 from recommandation_de_livres.config import INTERIM_DATA_DIR, RAW_DATA_DIR
 
 # --- Dossier raw pour les datasets "personnels"
+if 'DIR' not in st.session_state:
+    st.error("⚠️ Aucun dataset sélectionné. Retournez à la page d'accueil pour en choisir un.")
+    st.stop()
+
 DATA_DIR = Path("data/raw")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 

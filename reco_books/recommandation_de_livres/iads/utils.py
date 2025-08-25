@@ -115,10 +115,9 @@ def choose_dataset_streamlit(raw=True):
     selected_dataset = st.selectbox("Sélectionnez un dataset :", [d.name for d in datasets])
     dataset_path = [d for d in datasets if d.name == selected_dataset][0]
 
-    st.session_state['DIR']=selected_dataset
     st.session_state['dataset_path']=dataset_path
 
-    return datasets
+    return datasets, selected_dataset
 
 def display_files_dataset(raw=True):
     """

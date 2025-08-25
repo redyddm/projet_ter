@@ -13,7 +13,8 @@ from recommandation_de_livres.iads.utils import choose_dataset_streamlit
 st.title("📂 Sélection du dataset")
 
 mode = st.radio("Type de données :", ["Raw", "Processed"], index=0)
-datasets = choose_dataset_streamlit(raw=(mode == "Raw"))
+datasets, selected_dataset = choose_dataset_streamlit(raw=(mode == "Raw"))
 
 if st.button("Charger"):
+    st.session_state['DIR']=selected_dataset
     st.info(f"Dataset {st.session_state['DIR']} choisi")
