@@ -3,7 +3,6 @@ from pathlib import Path
 from loguru import logger
 from tqdm import tqdm
 import pandas as pd
-import gensim
 import typer
 
 from recommandation_de_livres.config import PROCESSED_DATA_DIR
@@ -51,11 +50,11 @@ def main(
     logger.info("Cleaning and tokenizing the text...")
 
     tqdm.pandas(desc='Fusion des textes')
-    content_df['text_combined'] = content_df.progress_apply(combine_text, axis=1)
-
-    tqdm.pandas(desc='Nettoyage des textes')
     cols_to_combine = ['title', 'categories', 'description']
     content_df['text_combined'] = content_df.progress_apply(lambda row: combine_text(row, cols_to_combine), axis=1)
+
+    tqdm.pandas(desc='Nettoyage des textes')
+    content_df['text_clean'] = content_df['text_combined'].progress_apply(nettoyage_leger)
 
     logger.info("Creating the features dataframe...")
 

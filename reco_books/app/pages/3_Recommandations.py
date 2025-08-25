@@ -10,7 +10,7 @@ from recommandation_de_livres.iads.app_ui import display_book_card
 from recommandation_de_livres.loaders.load_data import load_pkl, load_parquet
 from recommandation_de_livres.iads.collabo_utils import recommandation_collaborative_top_k
 from recommandation_de_livres.iads.content_utils import suggest_titles, recommandation_content_top_k
-from recommandation_de_livres.iads.hybrid_utils import recommandation_hybride_vectorisee
+from recommandation_de_livres.iads.hybrid_utils import recommandation_hybride_mmr_knn
 
 DIR = st.session_state['DIR']
 
@@ -71,6 +71,23 @@ def load_embeddings_w2v():
 def load_embeddings_sbert():
     return np.load(PROCESSED_DATA_DIR / DIR / "embeddings_sbert.npy")
 
+# --- NOUVEAU : Chargement KNN Goodreads ---
+@st.cache_resource
+def load_knn_goodreads_sbert():
+    path = MODELS_DIR / DIR / "knn_model_sbert.joblib"
+    if path.exists():
+        import joblib
+        return joblib.load(path)
+    return None  # si pas trouvé, on retourne None
+
+@st.cache_resource
+def load_knn_goodreads_w2v():
+    path = MODELS_DIR / DIR / "knn_model_w2v.joblib"
+    if path.exists():
+        import joblib
+        return joblib.load(path)
+    return None  # si pas trouvé, on retourne None
+
 tfidf, tfidf_matrix = load_tfidf()
 content_df = load_content()
 svd_model = load_svd_model()
@@ -78,6 +95,8 @@ w2v_model = load_w2v_model()
 embeddings_w2v = load_embeddings_w2v()
 sbert_model = load_sbert_model()
 embeddings_sbert = load_embeddings_sbert()
+knn_goodreads_sbert = load_knn_goodreads_sbert()  # <- KNN chargé ici
+knn_goodreads_w2v = load_knn_goodreads_w2v()  # <- KNN chargé ici
 
 # ---------------------------
 # Formulaire unique
@@ -120,11 +139,25 @@ if st.button("Rechercher"):
             books=books
         )
     elif reco_type == "Livres similaires à celui-ci":
-        top_books, _ = recommandation_content_top_k(selected_title, embeddings_w2v, w2v_model, content_df, top_k)
+        top_books, _ = recommandation_content_top_k(
+            selected_title,
+            embeddings_w2v,
+            w2v_model,
+            content_df,
+            knn=knn_goodreads_w2v,  # <- utilisation KNN ici
+            k=top_k
+        )
     elif reco_type == "Livres proches en thème et style":
-        top_books, _ = recommandation_content_top_k(selected_title, embeddings_sbert, sbert_model, content_df, top_k)
+        top_books, _ = recommandation_content_top_k(
+            selected_title,
+            embeddings_sbert,
+            sbert_model,
+            content_df,
+            knn=knn_goodreads_sbert,  # <- utilisation KNN ici
+            k=top_k
+        )
     elif reco_type == "Recommandations personnalisées":
-        top_books = recommandation_hybride_vectorisee(
+        top_books = recommandation_hybride_mmr_knn(
             user_id=st.session_state["user_id"],
             collaborative_model=svd_model,
             content_model=sbert_model,
@@ -133,8 +166,9 @@ if st.button("Rechercher"):
             books=books,
             embeddings=embeddings_sbert,
             alpha=alpha,
+            knn=knn_goodreads_sbert,
             k=top_k,
-            top_k_content=30
+            top_k_content=50
         )
 
     # Merge pour récupérer les colonnes nécessaires comme average_rating

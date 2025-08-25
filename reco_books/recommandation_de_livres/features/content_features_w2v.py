@@ -13,7 +13,6 @@ from recommandation_de_livres.config import PROCESSED_DATA_DIR
 from recommandation_de_livres.loaders.load_data import load_parquet
 from recommandation_de_livres.iads.utils import save_df_to_csv, save_df_to_parquet
 from recommandation_de_livres.iads.content_utils import combine_text
-from recommandation_de_livres.iads.text_cleaning import nettoyage_texte
 
 app = typer.Typer()
 

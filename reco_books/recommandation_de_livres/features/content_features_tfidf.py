@@ -50,13 +50,15 @@ def main(
 
     logger.info('Fusionning the texts for TF-IDF...')
 
+    tqdm.pandas(desc='Fusion des textes')
+
     cols_to_combine = ['title', 'authors']
     content_df['text_combined'] = content_df.progress_apply(lambda row: combine_text(row, cols_to_combine), axis=1)
     
     logger.info("Cleaning and tokenizing the text...")
 
     tqdm.pandas(desc='Nettoyage des textes')
-    content_df['text_clean'] = content_df['text_for_tfidf'].progress_apply(nettoyage_avance)
+    content_df['text_clean'] = content_df['text_combined'].progress_apply(nettoyage_avance)
 
     logger.info("Creating the features dataframe...")
 

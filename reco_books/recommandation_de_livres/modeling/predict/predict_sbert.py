@@ -17,7 +17,8 @@ DIR = choose_dataset_interactively()
 print(f"Dataset choisi : {DIR}")
 
 # --- Choix simple pour KNN ---
-use_knn = input("Voulez-vous utiliser KNN pour accélérer la recherche ? (o/n) : ").strip().lower() == "o"
+use_knn_input = input("Voulez-vous utiliser KNN pour accélérer la recherche ? (o/n) : ").strip().lower() or "o"
+use_knn = use_knn_input == "o"
 if use_knn:
     knn_path = MODELS_DIR / DIR / "knn_model_sbert.joblib"
     if knn_path.exists():
