@@ -9,8 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from pathlib import Path
 from recommandation_de_livres.config import PROCESSED_DATA_DIR, MODELS_DIR
 from recommandation_de_livres.loaders.load_data import load_parquet
-from recommandation_de_livres.iads.content_utils import combine_text, get_text_vector
-from recommandation_de_livres.iads.text_cleaning import nettoyage_texte
+from recommandation_de_livres.iads.content_utils import get_text_vector
 from recommandation_de_livres.iads.progress_w2v import TqdmCorpus, EpochLogger
 import multiprocessing as mp
 
@@ -31,8 +30,8 @@ tabs = st.tabs(["Word2Vec", "Sentence-BERT", "TF-IDF"])
 
 # ------------------ WORD2VEC ------------------
 with tabs[0]:
-    st.subheader("🔤 Features Word2Vec")
-    st.info("Nettoie, tokenise et prépare les textes pour un entraînement Word2Vec.")
+    st.subheader("🔤 Entrainement Word2Vec")
+    st.info("Entraine Word2Vec sur les features créées précédemment.")
 
     vector_size = st.number_input("Dimension des vecteurs", min_value=50, max_value=1024, value=300, step=50)
     window = st.number_input("Taille de la fenêtre", min_value=2, max_value=20, value=10, step=1)
@@ -81,7 +80,7 @@ with tabs[0]:
 
 # ------------------ SENTENCE-BERT ------------------
 with tabs[1]:
-    st.subheader("🤖 Features Sentence-BERT")
+    st.subheader("🤖 Entrainement Sentence-BERT")
     st.info("Génère des embeddings Sentence-BERT pour chaque livre à partir du texte nettoyé.")
 
     batch_size = st.number_input("Batch size", min_value=8, max_value=256, value=64, step=8)
@@ -117,8 +116,8 @@ with tabs[1]:
 
 # ------------------ TF-IDF ------------------
 with tabs[2]:
-    st.subheader("📝 Features TF-IDF")
-    st.info("Génère une matrice TF-IDF sur les textes nettoyés (titre + auteurs).")
+    st.subheader("📝 Entrainement TF-IDF")
+    st.info("Génère une matrice TF-IDF sur les textes nettoyés.")
 
     ngram_min = st.number_input("Ngram min", min_value=1, max_value=3, value=1)
     ngram_max = st.number_input("Ngram max", min_value=1, max_value=3, value=3)

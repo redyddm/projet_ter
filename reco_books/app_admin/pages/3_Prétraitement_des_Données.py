@@ -83,12 +83,14 @@ with tab1:
     allowed_langs = st.text_input("Langues autorisées (séparées par virgule)", "en,eng,en-US,en-GB,en-CA")
     allowed_langs = [lang.strip() for lang in allowed_langs.split(",")]
 
-    get_description = st.checkbox("Ajouter les descriptions manquantes (Basé sur le dataset Goodreads si ce n'est pas lui)", value=False)
+    get_description = st.checkbox("Ajouter les descriptions manquantes (Uniquement si manquantes)", value=False)
 
     st.caption(
-    "⚠️ Prérequis : Une base de données PostgreSQL basé sur le dataset goodreads : https://cseweb.ucsd.edu/~jmcauley/datasets/goodreads.html ." \
+    "⚠️ Prérequis : Une base de données PostgreSQL créée depuis la base de données d'openlibrary : https://openlibrary.org/developers/dumps\n"
+    "Lien pour créer la base : https://github.com/LibrariesHacked/openlibrary-search\n"
     "Ce paramètre ne concerne que les datasets qui n'ont pas de colonne 'description'."
     )
+
 
     # -------------------------------
     # Bouton pour lancer le prétraitement

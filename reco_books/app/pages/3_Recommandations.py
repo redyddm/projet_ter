@@ -5,12 +5,12 @@ import pickle
 import gensim
 from pathlib import Path
 from recommandation_de_livres.config import PROCESSED_DATA_DIR, MODELS_DIR
-from recommandation_de_livres.iads.utils import stars, imdb_weighted_rating
+from recommandation_de_livres.iads.utils import stars
 from recommandation_de_livres.iads.app_ui import display_book_card
 from recommandation_de_livres.loaders.load_data import load_pkl, load_parquet
 from recommandation_de_livres.iads.collabo_utils import recommandation_collaborative_top_k
-from recommandation_de_livres.iads.content_utils import suggest_titles, recommandation_content_top_k
-from recommandation_de_livres.iads.hybrid_utils import recommandation_hybride_mmr_knn
+from recommandation_de_livres.iads.content_utils import suggest_titles, recommandation_content_top_k, user_profile_embedding, recommandation_content_user_top_k
+from recommandation_de_livres.iads.hybrid_utils import recommandation_hybride
 
 DIR = st.session_state['DIR']
 
@@ -28,8 +28,6 @@ if "ratings_count" not in books.columns:
     books = books.merge(rating_count, on='item_id', how='left')
 
     st.session_state["books"]=books
-
-books = imdb_weighted_rating(books, m_quantile=0.75)
 
 
 # ---------------------------
@@ -73,7 +71,7 @@ def load_embeddings_sbert():
 
 # --- NOUVEAU : Chargement KNN Goodreads ---
 @st.cache_resource
-def load_knn_goodreads_sbert():
+def load_knn_sbert():
     path = MODELS_DIR / DIR / "knn_model_sbert.joblib"
     if path.exists():
         import joblib
@@ -81,7 +79,7 @@ def load_knn_goodreads_sbert():
     return None  # si pas trouvé, on retourne None
 
 @st.cache_resource
-def load_knn_goodreads_w2v():
+def load_knn_w2v():
     path = MODELS_DIR / DIR / "knn_model_w2v.joblib"
     if path.exists():
         import joblib
@@ -90,13 +88,6 @@ def load_knn_goodreads_w2v():
 
 tfidf, tfidf_matrix = load_tfidf()
 content_df = load_content()
-svd_model = load_svd_model()
-w2v_model = load_w2v_model()
-embeddings_w2v = load_embeddings_w2v()
-sbert_model = load_sbert_model()
-embeddings_sbert = load_embeddings_sbert()
-knn_goodreads_sbert = load_knn_goodreads_sbert()  # <- KNN chargé ici
-knn_goodreads_w2v = load_knn_goodreads_w2v()  # <- KNN chargé ici
 
 # ---------------------------
 # Formulaire unique
@@ -107,14 +98,16 @@ reco_type = st.selectbox(
 )
 top_k = st.slider("Nombre de recommandations", 1, 20, 5)
 
-selected_title = None
-if reco_type in ["Livres similaires à celui-ci", "Livres proches en thème et style"]:
-    book_title_input = st.text_input("Titre du livre de départ")
-    if book_title_input:
-        suggestions_df = suggest_titles(book_title_input, tfidf, tfidf_matrix, content_df, k=10)
-        suggestion_list = suggestions_df['title'] + " - " + suggestions_df['authors']
-        selected_title_author = st.selectbox("Titres suggérés :", suggestion_list)
-        selected_title = selected_title_author.split(" - ")[0]
+user_id=st.session_state["user_id"]
+if str(user_id) not in str(ratings['user_id']):
+    selected_title = None
+    if reco_type in ["Livres similaires à celui-ci", "Livres proches en thème et style"]:
+        book_title_input = st.text_input("Titre du livre de départ")
+        if book_title_input:
+            suggestions_df = suggest_titles(book_title_input, tfidf, tfidf_matrix, content_df, k=10)
+            suggestion_list = suggestions_df['title'] + " - " + suggestions_df['authors']
+            selected_title_author = st.selectbox("Titres suggérés :", suggestion_list)
+            selected_title = selected_title_author.split(" - ")[0]
 
 # Slider alpha pour hybride
 if reco_type == "Recommandations personnalisées":
@@ -127,37 +120,64 @@ if reco_type == "Recommandations personnalisées":
 # ---------------------------
 # Recherche et affichage
 # ---------------------------
+# ---------------------------
+# Recherche et affichage
+# ---------------------------
 if st.button("Rechercher"):
 
     # Choix du modèle et embeddings selon reco_type
     if reco_type == "Recommandations basées sur vos goûts":
+        svd_model = load_svd_model()
         top_books, _ = recommandation_collaborative_top_k(
             k=top_k,
-            user_id=st.session_state["user_id"],
+            user_id=user_id,
             model=svd_model,
             ratings=ratings,
             books=books
         )
-    elif reco_type == "Livres similaires à celui-ci":
-        top_books, _ = recommandation_content_top_k(
-            selected_title,
-            embeddings_w2v,
-            w2v_model,
-            content_df,
-            knn=knn_goodreads_w2v,  # <- utilisation KNN ici
-            k=top_k
-        )
-    elif reco_type == "Livres proches en thème et style":
-        top_books, _ = recommandation_content_top_k(
-            selected_title,
-            embeddings_sbert,
-            sbert_model,
-            content_df,
-            knn=knn_goodreads_sbert,  # <- utilisation KNN ici
-            k=top_k
-        )
+
+    elif reco_type in ["Livres similaires à celui-ci", "Livres proches en thème et style"]:
+        if reco_type == "Livres similaires à celui-ci":
+            embeddings = load_embeddings_w2v()
+            model = load_w2v_model()
+            knn = load_knn_w2v()
+        else:
+            embeddings = load_embeddings_sbert()
+            model = load_sbert_model()
+            knn = load_knn_sbert()
+
+        # Vérifier si l'utilisateur a un profil
+        item_id_to_idx = {item_id: idx for idx, item_id in enumerate(books['item_id'])}
+        user_vec = user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx)
+
+        if user_vec is not None:
+            # Reco basée sur profil utilisateur
+            top_books, _ = recommandation_content_user_top_k(
+                st.session_state["user_id"],
+                embeddings,
+                model,
+                content_df,
+                ratings,
+                knn=knn,
+                k=top_k
+            )
+
+            if selected_title:
+                top_books, _ = recommandation_content_top_k(
+                    selected_title,
+                    embeddings,
+                    model,
+                    content_df,
+                    knn=knn,
+                    k=top_k
+                )
+
     elif reco_type == "Recommandations personnalisées":
-        top_books = recommandation_hybride_mmr_knn(
+        embeddings_sbert = load_embeddings_sbert()
+        sbert_model = load_sbert_model()
+        knn_sbert = load_knn_sbert()
+        svd_model = load_svd_model()
+        top_books = recommandation_hybride(
             user_id=st.session_state["user_id"],
             collaborative_model=svd_model,
             content_model=sbert_model,
@@ -166,14 +186,13 @@ if st.button("Rechercher"):
             books=books,
             embeddings=embeddings_sbert,
             alpha=alpha,
-            knn=knn_goodreads_sbert,
+            knn=knn_sbert,
             k=top_k,
             top_k_content=50
         )
 
     # Merge pour récupérer les colonnes nécessaires comme average_rating
     top_books['item_id'] = top_books['item_id'].astype(int)
-
     cols_to_keep = [c for c in books.columns if c not in top_books.columns]
     top_books_full = top_books.merge(
         books[cols_to_keep + ["item_id"]],
@@ -186,5 +205,4 @@ if st.button("Rechercher"):
     for i, (_, book) in enumerate(top_books_full.iterrows()):
         col = cols[i % 5]
         with col:
-            # Affichage avec possibilité d'ajout
             display_book_card(book, allow_add=True, page_context="reco", show_rating_type="predicted")

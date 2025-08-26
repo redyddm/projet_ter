@@ -39,9 +39,9 @@ book_path = INTERIM_DATA_DIR / DIR / "books_uniform.csv"
 rating_path = INTERIM_DATA_DIR / DIR / "ratings_uniform.csv"
 
 if not book_path.exists() or not rating_path.exists():
-    st.error(f"Le dataset '{DIR}' n'a pas encore été uniformisé. "
-             f"Assurez-vous que 'books_uniform.csv' et 'ratings_uniform.csv' existent dans {INTERIM_DATA_DIR / DIR}")
-    st.stop()
+    book_path = RAW_DATA_DIR / DIR / "books.csv"
+    rating_path = INTERIM_DATA_DIR / DIR / "ratings.csv"
+    st.info("Datasets uniformisés non trouvés, chargement des données brutes")
     
 # --- Sidebar ---
 st.sidebar.title("Exploration EDA")

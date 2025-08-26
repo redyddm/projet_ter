@@ -1,8 +1,11 @@
 import streamlit as st
-from recommandation_de_livres.iads.app_ui import display_book_card
-from recommandation_de_livres.iads.utils import imdb_weighted_rating
 import pandas as pd
+import numpy as np
 
+from recommandation_de_livres.iads.app_ui import display_book_card, validate_pending_ratings
+from recommandation_de_livres.iads.utils import imdb_weighted_rating
+
+# --- Vérifier connexion ---
 if not st.session_state.get("logged_in", False):
     st.warning("🚪 Veuillez vous connecter pour accéder à cette page.")
     st.stop()
@@ -12,12 +15,9 @@ ratings = st.session_state["ratings"]
 user_index = st.session_state["user_index"]
 user_id = st.session_state["user_id"]
 
-if "ratings_count" not in books.columns:
-    rating_count = ratings.groupby('item_id')['rating'].count().to_frame(name='ratings_count').reset_index()
-    books = books.merge(rating_count, on='item_id', how='left')
-
-    st.session_state["books"]=books
-
+# --- Initialiser panier temporaire si absent ---
+if "pending_ratings" not in st.session_state:
+    st.session_state["pending_ratings"] = []
 
 # --- Livres déjà notés par l'utilisateur ---
 books_user = ratings[ratings["user_index"] == user_index]
@@ -30,36 +30,60 @@ books_user_full = books_user.merge(
     how="left"
 )
 
-# --- Cold start : livres populaires pondérés IMDB ---
-if books_user.empty:
-    cold_start_books = imdb_weighted_rating(books).sort_values("weighted_rating", ascending=False).head(10)
-    # Exclure les livres déjà notés (au cas où)
-    cold_start_books = cold_start_books[~cold_start_books["item_id"].isin(books_user["item_id"])]
-else:
-    cold_start_books = pd.DataFrame() 
-
-# --- Fusion pour afficher ensemble ---
-books_to_display = pd.concat([books_user_full, cold_start_books], ignore_index=True)
-
 st.title("📚 Ma Collection")
-if books_to_display.empty:
+
+# --- Cas où utilisateur n'a pas de livres ---
+if books_user_full.empty:
     st.info("📭 Aucun livre trouvé pour cet utilisateur.")
+    # --- Suggestions populaires ---
+    st.subheader("🔥 Suggestions populaires pour vous")
+
+    popularity_df = ratings.groupby("item_id").agg(
+        count=("rating", "count"),
+        mean_rating=("rating", "mean")
+    ).reset_index()
+
+    m = popularity_df["count"].quantile(0.80)
+    C = popularity_df["mean_rating"].mean()
+    popularity_df["score"] = popularity_df.apply(
+        lambda x: imdb_weighted_rating(x["count"], x["mean_rating"], m, C), axis=1
+    )
+
+    popularity_df = popularity_df.merge(books, on="item_id", how="inner")
+    top_books = popularity_df.sort_values("score", ascending=False).head(100)
+    recommended_books = top_books.head(5)
+
+    cols = st.columns(5)
+    for i, (_, book) in enumerate(recommended_books.iterrows()):
+        with cols[i % 5]:
+            display_book_card(book, allow_add=True, page_context="popular")
+
+    # --- Affichage panier temporaire et bouton global ---
+    if st.session_state.get("pending_ratings"):
+        st.subheader("📝 Sélection en attente :")
+        for r in st.session_state["pending_ratings"]:
+            book_title = st.session_state["books"].set_index("item_id").loc[r["item_id"], "title"]
+            st.write(f"- {book_title} ({r['rating']}⭐)")
+
+        if st.button("Valider ma sélection"):
+            validate_pending_ratings()
+
+
+# --- Affichage de la collection ---
 else:
-    # Pagination
     page_size = 5
     if "page_num_collection" not in st.session_state:
         st.session_state["page_num_collection"] = 0
-    total_pages = (len(books_to_display)-1)//page_size + 1
+    total_pages = (len(books_user_full)-1)//page_size + 1
     start_idx = st.session_state["page_num_collection"] * page_size
     end_idx = start_idx + page_size
-    books_page = books_to_display.iloc[start_idx:end_idx]
+    books_page = books_user_full.iloc[start_idx:end_idx]
 
     books_per_row = 5
     for row in range(0, len(books_page), books_per_row):
         cols = st.columns(books_per_row)
         for i, (_, book) in enumerate(books_page.iloc[row:row+books_per_row].iterrows()):
             with cols[i % books_per_row]:
-                # Si le livre est déjà noté, pas de possibilité d'ajouter
                 allow_add = book["item_id"] not in books_user["item_id"].values
                 display_book_card(book, allow_add=allow_add, page_context="collection")
 

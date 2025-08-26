@@ -1,5 +1,6 @@
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+import pandas as pd
 import gensim
 
 def get_text_vector(text, model):
@@ -66,6 +67,23 @@ def combine_text(row, cols):
     parts = [str(row.get(col, '')) for col in cols] # fusion des textes des colonnes correspondantes
     return ' '.join(parts)
 
+def user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx):
+    rated_books = ratings[ratings["user_id"] == user_id]
+    if rated_books.empty:
+        return None
+
+    vectors = []
+    for _, row in rated_books.iterrows():
+        idx = item_id_to_idx.get(row['item_id'])
+        if idx is not None:
+            vectors.append(embeddings[idx] * row['rating'])  # pondération par la note
+
+    if not vectors:
+        return None
+
+    user_vec = np.mean(vectors, axis=0)
+    return user_vec
+
 #--------------FONCTION DE RECOMMANDATION--------------
 
 def recommandation_content_top_k(book_title, embeddings, model, books_df, knn, k=5):
@@ -117,3 +135,52 @@ def recommandation_content_top_k(book_title, embeddings, model, books_df, knn, k
         top_books = books_df.iloc[top_k_idx].copy()
 
     return top_books, sim_scores
+
+def recommandation_content_user_top_k(user_id, embeddings, model, books_df, ratings, knn=None, k=5):
+    """
+    Retourne les k livres les plus similaires au profil utilisateur.
+    Args:
+        user_id : ID de l'utilisateur.
+        embeddings (np.ndarray) : Matrice des embeddings des livres.
+        model : Modèle utilisé pour générer un embedding si nécessaire (Word2Vec, SBERT, etc.)
+        books_df (pd.DataFrame) : DataFrame des livres.
+        ratings (pd.DataFrame) : DataFrame des ratings (user_id, item_id, rating).
+        knn : KNN pré-entraîné sur les embeddings (optionnel).
+        k (int) : Nombre de recommandations.
+    Returns:
+        (pd.DataFrame, np.ndarray) : top-k livres + scores de similarité
+    """
+
+    # 1️⃣ Créer le vecteur profil utilisateur
+    rated_books = ratings[ratings["user_id"] == user_id]
+    if rated_books.empty:
+        return pd.DataFrame(), np.array([])
+
+    item_id_to_idx = {item_id: idx for idx, item_id in enumerate(books_df['item_id'])}
+    vectors = []
+    for _, row in rated_books.iterrows():
+        idx = item_id_to_idx.get(row['item_id'])
+        if idx is not None:
+            vectors.append(embeddings[idx] * row['rating'])
+    user_vec = np.mean(vectors, axis=0).reshape(1, -1)
+
+    # 2️⃣ Calcul similarité
+    if knn is not None:
+        # utiliser KNN pour récupérer top-k
+        distances, top_k_idx = knn.kneighbors(user_vec)
+        top_books = books_df.iloc[top_k_idx[0]].copy()
+        sim_scores = 1 - distances[0]
+    else:
+        # cosine similarity brute
+        similarity = cosine_similarity(user_vec, embeddings)[0]
+        top_k_idx = np.argsort(similarity)[-k:][::-1]
+        top_books = books_df.iloc[top_k_idx].copy()
+        sim_scores = similarity[top_k_idx]
+
+    # 3️⃣ Exclure les livres déjà notés
+    top_books = top_books[~top_books['item_id'].isin(rated_books['item_id'])].reset_index(drop=True)
+    top_books = top_books.iloc[1:k+1]
+    sim_scores = sim_scores[:len(top_books)]
+
+    return top_books, sim_scores
+
