@@ -96,9 +96,9 @@ selected_title = None
 # Slider alpha pour hybride
 if reco_type == "Recommandations personnalisées":
     alpha = st.slider(
-        "Pondération Collaborative vs Contenu (alpha)",
+        "Influence des types de recommandations",
         0.0, 1.0, 0.5, 0.05,
-        help="0 = uniquement contenu, 1 = uniquement collaboratif"
+        help="0 = uniquement proches en thèmes et styles, 1 = uniquement basé sur vos goûts"
     )
 
 # ---------------------------
