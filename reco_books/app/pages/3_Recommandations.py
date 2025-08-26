@@ -51,19 +51,10 @@ def load_svd_model():
     return load_pkl(path)
 
 @st.cache_resource
-def load_w2v_model():
-    path = MODELS_DIR / DIR / "word2vec.model"
-    return gensim.models.Word2Vec.load(str(path))
-
-@st.cache_resource
 def load_sbert_model():
     from sentence_transformers import SentenceTransformer
     path = MODELS_DIR / DIR / "sbert_model"
     return SentenceTransformer(str(path))
-
-@st.cache_data
-def load_embeddings_w2v():
-    return np.load(PROCESSED_DATA_DIR / DIR / "embeddings_w2v.npy")
 
 @st.cache_data
 def load_embeddings_sbert():
@@ -78,14 +69,6 @@ def load_knn_sbert():
         return joblib.load(path)
     return None  # si pas trouvé, on retourne None
 
-@st.cache_resource
-def load_knn_w2v():
-    path = MODELS_DIR / DIR / "knn_model_w2v.joblib"
-    if path.exists():
-        import joblib
-        return joblib.load(path)
-    return None  # si pas trouvé, on retourne None
-
 tfidf, tfidf_matrix = load_tfidf()
 content_df = load_content()
 
@@ -94,20 +77,21 @@ content_df = load_content()
 # ---------------------------
 reco_type = st.selectbox(
     "Type de recommandation",
-    ["Recommandations basées sur vos goûts", "Livres similaires à celui-ci", "Livres proches en thème et style", "Recommandations personnalisées"]
+    ["Recommandations basées sur vos goûts", "Livres proches en thème et style", "Recommandations personnalisées"]
 )
 top_k = st.slider("Nombre de recommandations", 1, 20, 5)
 
 user_id=st.session_state["user_id"]
 if str(user_id) not in str(ratings['user_id']):
-    selected_title = None
-    if reco_type in ["Livres similaires à celui-ci", "Livres proches en thème et style"]:
+    if reco_type in ["Livres proches en thème et style"]:
         book_title_input = st.text_input("Titre du livre de départ")
         if book_title_input:
             suggestions_df = suggest_titles(book_title_input, tfidf, tfidf_matrix, content_df, k=10)
             suggestion_list = suggestions_df['title'] + " - " + suggestions_df['authors']
             selected_title_author = st.selectbox("Titres suggérés :", suggestion_list)
             selected_title = selected_title_author.split(" - ")[0]
+
+selected_title = None
 
 # Slider alpha pour hybride
 if reco_type == "Recommandations personnalisées":
@@ -136,15 +120,9 @@ if st.button("Rechercher"):
             books=books
         )
 
-    elif reco_type in ["Livres similaires à celui-ci", "Livres proches en thème et style"]:
-        if reco_type == "Livres similaires à celui-ci":
-            embeddings = load_embeddings_w2v()
-            model = load_w2v_model()
-            knn = load_knn_w2v()
-        else:
-            embeddings = load_embeddings_sbert()
-            model = load_sbert_model()
-            knn = load_knn_sbert()
+    elif reco_type in ["Livres proches en thème et style"]:
+        embeddings = load_embeddings_sbert()
+        knn = load_knn_sbert()
 
         # Vérifier si l'utilisateur a un profil
         item_id_to_idx = {item_id: idx for idx, item_id in enumerate(books['item_id'])}
@@ -155,7 +133,6 @@ if st.button("Rechercher"):
             top_books, _ = recommandation_content_user_top_k(
                 st.session_state["user_id"],
                 embeddings,
-                model,
                 content_df,
                 ratings,
                 knn=knn,
@@ -163,6 +140,7 @@ if st.button("Rechercher"):
             )
 
             if selected_title:
+                model = load_sbert_model()
                 top_books, _ = recommandation_content_top_k(
                     selected_title,
                     embeddings,

@@ -1,30 +1,14 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import time
 from pathlib import Path
 from surprise import SVD, NMF, Dataset, Reader
-from surprise.model_selection import cross_validate, KFold
+from surprise.model_selection import KFold
 from recommandation_de_livres.config import PROCESSED_DATA_DIR
 from recommandation_de_livres.loaders.load_data import load_parquet
+from recommandation_de_livres.iads.evaluation import precision_recall_at_k
 
-# --- Fonctions pour Precision@K et Recall@K ---
-def precision_recall_at_k(predictions, k=10, threshold=3.5):
-    """Calcule Precision@K et Recall@K pour un ensemble de prédictions Surprise"""
-    user_est_true = {}
-    for uid, _, true_r, est, _ in predictions:
-        user_est_true.setdefault(uid, []).append((est, true_r))
-
-    precisions, recalls = {}, {}
-    for uid, ratings in user_est_true.items():
-        ratings.sort(key=lambda x: x[0], reverse=True)  # Tri par score estimé décroissant
-        n_rel = sum(true_r >= threshold for (_, true_r) in ratings)
-        n_rec_k = sum(est >= threshold for (est, _) in ratings[:k])
-        n_rel_and_rec_k = sum((true_r >= threshold) and (est >= threshold) for (est, true_r) in ratings[:k])
-
-        precisions[uid] = n_rel_and_rec_k / n_rec_k if n_rec_k != 0 else 0
-        recalls[uid] = n_rel_and_rec_k / n_rel if n_rel != 0 else 0
-
-    return np.mean(list(precisions.values())), np.mean(list(recalls.values()))
 
 # --- TITRE ---
 st.title("⚙️ Évaluation avancée des modèles collaboratifs (SVD & NMF)")
@@ -63,7 +47,7 @@ rating_scale = (min_rating, max_rating)
 k_top = st.slider("K pour Precision@K et Recall@K", min_value=1, max_value=50, value=10)
 threshold = st.slider("Seuil d'une recommandation 'pertinente'", min_value=float(min_rating), max_value=float(max_rating), value=4.0, step=0.5)
 
-# --- Paramètres spécifiques SVD ---
+# --- Paramètres spécifiques SVD & NMF ---
 tab1, tab2 = st.tabs(['Paramètres SVD', 'Paramètres NMF'])
 
 with tab1:
@@ -95,9 +79,13 @@ if st.button("🚀 Lancer la cross-validation complète"):
 
     for model_name, algo in algos.items():
         with st.spinner(f"Évaluation du modèle {model_name}..."):
+            start_model_time = time.time()
+
             rmse_scores, mae_scores, precisions, recalls, catalog_coverages = [], [], [], [], []
 
-            for trainset, testset in kf.split(data):
+            for fold, (trainset, testset) in enumerate(kf.split(data), start=1):
+                fold_start = time.time()
+
                 algo.fit(trainset)
                 predictions = algo.test(testset)
 
@@ -118,12 +106,18 @@ if st.button("🚀 Lancer la cross-validation complète"):
                 catalog_cov = len(recommended_items) / len(all_items)
                 catalog_coverages.append(catalog_cov)
 
+                st.write(f"**{model_name} - Fold {fold}/5 terminé** ({time.time() - fold_start:.2f}s)")
+
+            total_time = time.time() - start_model_time
+
             results[model_name] = {
                 "RMSE": np.mean(rmse_scores),
                 "MAE": np.mean(mae_scores),
                 "Precision@K": np.mean(precisions),
                 "Recall@K": np.mean(recalls),
-                "CatalogCoverage": np.mean(catalog_coverages)
+                "CatalogCoverage": np.mean(catalog_coverages),
+                "TempsTotal(s)": total_time,
+                "TempsMoyenParFold(s)": total_time / 5
             }
 
     # --- Résultats ---
