@@ -136,7 +136,7 @@ def recommandation_content_top_k(book_title, embeddings, model, books_df, knn, k
 
     return top_books, sim_scores
 
-def recommandation_content_user_top_k(user_id, embeddings, model, books_df, ratings, knn=None, k=5):
+def recommandation_content_user_top_k(user_id, embeddings, books_df, ratings, knn=None, k=5):
     """
     Retourne les k livres les plus similaires au profil utilisateur.
     Args:
@@ -151,7 +151,7 @@ def recommandation_content_user_top_k(user_id, embeddings, model, books_df, rati
         (pd.DataFrame, np.ndarray) : top-k livres + scores de similarité
     """
 
-    # 1️⃣ Créer le vecteur profil utilisateur
+    # Créer le vecteur profil utilisateur
     rated_books = ratings[ratings["user_id"] == user_id]
     if rated_books.empty:
         return pd.DataFrame(), np.array([])
@@ -164,7 +164,7 @@ def recommandation_content_user_top_k(user_id, embeddings, model, books_df, rati
             vectors.append(embeddings[idx] * row['rating'])
     user_vec = np.mean(vectors, axis=0).reshape(1, -1)
 
-    # 2️⃣ Calcul similarité
+    # Calcul similarité
     if knn is not None:
         # utiliser KNN pour récupérer top-k
         distances, top_k_idx = knn.kneighbors(user_vec)
@@ -177,7 +177,7 @@ def recommandation_content_user_top_k(user_id, embeddings, model, books_df, rati
         top_books = books_df.iloc[top_k_idx].copy()
         sim_scores = similarity[top_k_idx]
 
-    # 3️⃣ Exclure les livres déjà notés
+    # Exclure les livres déjà notés
     top_books = top_books[~top_books['item_id'].isin(rated_books['item_id'])].reset_index(drop=True)
     top_books = top_books.iloc[1:k+1]
     sim_scores = sim_scores[:len(top_books)]
