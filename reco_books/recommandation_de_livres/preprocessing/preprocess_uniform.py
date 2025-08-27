@@ -34,7 +34,9 @@ def unify_book_ids(df):
 
 def rename_books_columns(books, book_id_col=None, isbn_col=None, 
                          language_col=None, title_col=None, 
-                         author_col=None, publisher_col=None, 
+                         author_col=None,
+                         cat_col=None, desc_col=None,
+                         publisher_col=None, 
                          year_col=None, image_col=None):
     """
     Renomme les colonnes d'un dataset de livres pour uniformiser.
@@ -67,6 +69,8 @@ def rename_books_columns(books, book_id_col=None, isbn_col=None,
     if isbn_col is not None: rename_map[isbn_col] = "isbn"
     if title_col is not None: rename_map[title_col] = "title"
     if author_col is not None: rename_map[author_col] = "authors"
+    if desc_col is not None: rename_map[desc_col] = "description"
+    if cat_col is not None: rename_map[cat_col] = "categories"
     if language_col is not None: rename_map[language_col] = "language"
     if publisher_col is not None: rename_map[publisher_col] = "publisher"
     if year_col is not None: rename_map[year_col] = "year"

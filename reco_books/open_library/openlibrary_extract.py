@@ -88,8 +88,8 @@ def get_infos_by_isbn_list(isbn_list):
     """
     conn = psycopg2.connect(
         dbname='openlibrary',
-        user='postgres', 
-        password='redsql', 
+        user='XXX', 
+        password='XXX', 
         host='localhost',
         port='5432'
     )
