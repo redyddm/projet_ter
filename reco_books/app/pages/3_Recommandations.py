@@ -25,9 +25,7 @@ ratings = st.session_state["ratings"]
 if "ratings_count" not in books.columns:
     rating_count = ratings.groupby('item_id')['rating'].count().to_frame(name='ratings_count').reset_index()
     books = books.merge(rating_count, on='item_id', how='left')
-
-    st.session_state["books"]=books
-
+    st.session_state["books"] = books
 
 # ---------------------------
 # Chargement ressources
@@ -66,7 +64,7 @@ def load_knn_sbert():
     if path.exists():
         import joblib
         return joblib.load(path)
-    return None  # si pas trouvé, on retourne None
+    return None
 
 tfidf, tfidf_matrix = load_tfidf()
 content_df = load_content()
@@ -83,17 +81,18 @@ reco_type = st.selectbox(
 )
 top_k = st.slider("Nombre de recommandations", 1, 20, 5)
 
-user_id=st.session_state["user_id"]
+user_id = st.session_state["user_id"]
+
+# Champ titre pour recherche contenu
+selected_title = None
 if str(user_id) not in str(ratings['user_id']):
-    if reco_type in ["Livres proches en thème et style"]:
+    if reco_type == "Livres proches en thème et style":
         book_title_input = st.text_input("Titre du livre de départ")
         if book_title_input:
             suggestions_df = suggest_titles(book_title_input, tfidf, tfidf_matrix, content_df, k=10)
             suggestion_list = suggestions_df['title'] + " - " + suggestions_df['authors']
             selected_title_author = st.selectbox("Titres suggérés :", suggestion_list)
             selected_title = selected_title_author.split(" - ")[0]
-
-selected_title = None
 
 # Slider alpha pour hybride
 if reco_type == "Recommandations personnalisées":
@@ -106,15 +105,13 @@ if reco_type == "Recommandations personnalisées":
 # ---------------------------
 # Recherche et affichage
 # ---------------------------
-# ---------------------------
-# Recherche et affichage
-# ---------------------------
 if st.button("Rechercher"):
 
+    # vecteur utilisateur si dispo
     item_id_to_idx = {item_id: idx for idx, item_id in enumerate(books['item_id'])}
     user_vec = user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx)
 
-    # Choix du modèle et embeddings selon reco_type
+    # --- Cas 1 : Collaborative ---
     if reco_type == "Recommandations basées sur vos goûts":
         if user_vec is not None:
             top_books, _ = recommandation_collaborative_top_k(
@@ -125,43 +122,39 @@ if st.button("Rechercher"):
                 books=books
             )
         else:
-            st.warning("Vous n'avez aucun livre dans votre collection. Veuillez en ajouter afin de pouvoir recevoir des recommandations basées sur vos goûts. Vous pouvez quand même avoir des recommandations selon un titre donné dans la section 'Livres proches en thèmes et styles'.")
+            st.info("⚠️ Pas de notes disponibles, passez aux recommandations par thèmes et styles.")
             st.stop()
 
-    elif reco_type in ["Livres proches en thème et style"]:
-
-        if user_vec is not None:
-            # Reco basée sur profil utilisateur
+    # --- Cas 2 : Contenu ---
+    if reco_type == "Livres proches en thème et style":
+        if selected_title:
+            model = load_sbert_model()
+            top_books, _ = recommandation_content_top_k(
+                selected_title,
+                embeddings,
+                None,
+                content_df,
+                knn=knn,
+                k=top_k
+            )
+        elif user_vec is not None:
             top_books, _ = recommandation_content_user_top_k(
-                st.session_state["user_id"],
+                user_id,
                 embeddings,
                 content_df,
                 ratings,
                 knn=knn,
                 k=top_k
             )
+        else:
+            st.warning("Veuillez saisir un titre pour obtenir des recommandations.")
+            st.stop()
 
-            if selected_title:
-                model = load_sbert_model()
-                top_books, _ = recommandation_content_top_k(
-                    selected_title,
-                    embeddings,
-                    None,
-                    content_df,
-                    knn=knn,
-                    k=top_k
-                )
-
+    # --- Cas 3 : Hybride ---
     elif reco_type == "Recommandations personnalisées":
-        embeddings = load_embeddings_sbert()
-        sbert_model = load_sbert_model()
-        knn_sbert = load_knn_sbert()
-        svd_model = load_svd_model()
-
         if user_vec is not None:
-            # Reco basée sur profil utilisateur            
             top_books = recommandation_hybride(
-                user_id=st.session_state["user_id"],
+                user_id=user_id,
                 collaborative_model=svd_model,
                 content_model=None,
                 content_df=content_df,
@@ -169,15 +162,18 @@ if st.button("Rechercher"):
                 books=books,
                 embeddings=embeddings,
                 alpha=alpha,
-                knn=knn_sbert,
+                knn=knn,
                 k=top_k,
                 top_k_content=100
             )
         else:
-            st.warning("Vous n'avez aucun livre dans votre collection. Veuillez en ajouter afin de pouvoir recevoir des recommandations personnalisées. Vous pouvez quand même avoir des recommandations selon un titre donné dans la section 'Livres proches en thèmes et styles'.")
+            st.info("⚠️ Pas de notes trouvées : passez aux recommandations par thèmes et styles.")
             st.stop()
+            
 
-    # Merge pour récupérer les colonnes nécessaires comme average_rating
+    # ---------------------------
+    # Fusion avec books
+    # ---------------------------
     top_books['item_id'] = top_books['item_id'].astype(object)
     books['item_id'] = books['item_id'].astype(object)
     cols_to_keep = [c for c in books.columns if c not in top_books.columns]
@@ -187,7 +183,9 @@ if st.button("Rechercher"):
         how="left"
     )
 
+    # ---------------------------
     # Affichage
+    # ---------------------------
     cols = st.columns(5)
     for i, (_, book) in enumerate(top_books_full.iterrows()):
         col = cols[i % 5]
