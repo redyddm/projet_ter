@@ -67,7 +67,7 @@ def display_book_card(book, allow_add=True, page_context="reco", show_rating_typ
             st.success("✅ Déjà dans votre collection")
         else:
             rating_key = f"user_{user_index}_book_{book['item_id']}_slider_{page_context}"
-            user_rating = st.number_input("Votre note", min_value=0.0, max_value=5.0, value=0.0, step=0.5, key=rating_key)
+            user_rating = st.number_input("Votre note", min_value=1.0, max_value=float(ratings['rating'].max()), value=1.0, step=0.5, key=rating_key)
 
             add_button_key = f"add_temp_{book['item_id']}_{page_context}"
             if st.button("Ajouter à ma sélection", key=add_button_key):
