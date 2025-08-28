@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from recommandation_de_livres.config import PROCESSED_DATA_DIR
 from recommandation_de_livres.loaders.load_data import load_csv, load_parquet
 
-DATA_DIR = "goodreads"
+DATA_DIR = "recommender"
 
 st.session_state['DIR']=DATA_DIR
 

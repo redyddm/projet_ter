@@ -1,7 +1,17 @@
 import streamlit as st
 import pandas as pd
-from recommandation_de_livres.iads.utils import stars, save_df_to_parquet
+from recommandation_de_livres.iads.utils import save_df_to_parquet
 from recommandation_de_livres.config import PROCESSED_DATA_DIR
+from pathlib import Path
+import streamlit as st
+
+def stars(rating: float, max_stars: int = 5) -> str:
+    """Retourne une chaîne d'étoiles ⭐ pour une note donnée."""
+    full_stars = int(rating)
+    half_star = rating - full_stars >= 0.5
+    empty_stars = max_stars - full_stars - int(half_star)
+
+    return "⭐" * full_stars + ("✨" if half_star else "") + "☆" * empty_stars
 
 def safe_get(book, key, default="Inconnue"):
     val = book.get(key, default) if isinstance(book, dict) else book.get(key, default)
@@ -40,7 +50,7 @@ def display_book_card(book, allow_add=True, page_context="reco", show_rating_typ
     else:
         score_display = 0
 
-    st.markdown(stars(score_display))
+    st.markdown(stars(score_display, max_stars=ratings['rating'].max()))
 
     # --- Initialisation panier ---
     if "pending_ratings" not in st.session_state:
@@ -99,3 +109,46 @@ def validate_pending_ratings():
         st.success(f"{len(st.session_state['pending_ratings'])} livre(s) ajouté(s) à votre collection 🎉")
         st.session_state["pending_ratings"] = []  # On vide le panier
         st.rerun()
+
+def choose_dataset_streamlit(raw=True):
+    """
+    Liste dynamiquement les datasets et fichiers dans RAW_DATA_DIR ou PROCESSED_DATA_DIR
+    et retourne le chemin du fichier sélectionné.
+    """
+    base_path = Path(RAW_DATA_DIR) if raw else Path(PROCESSED_DATA_DIR)
+
+    # Lister les datasets
+    datasets = [d for d in base_path.iterdir() if d.is_dir()]
+    if not datasets:
+        st.error(f"Aucun dataset trouvé dans {base_path}")
+        st.stop()
+
+    # Choix du dataset
+    selected_dataset = st.selectbox("Sélectionnez un dataset :", [d.name for d in datasets])
+    dataset_path = [d for d in datasets if d.name == selected_dataset][0]
+
+    st.session_state['dataset_path']=dataset_path
+
+    return datasets, selected_dataset
+
+def display_files_dataset(raw=True):
+    """
+    Liste dynamiquement les datasets et fichiers dans RAW_DATA_DIR ou PROCESSED_DATA_DIR
+    et retourne le chemin du fichier sélectionné.
+    """
+
+    datasets=choose_dataset_streamlit(raw=raw)
+
+    # Choix du dataset
+    dataset_path = st.session_state['dataset_path']
+
+    # Lister les fichiers disponibles
+    files = list(dataset_path.glob("*.csv")) + list(dataset_path.glob("*.parquet"))
+    if not files:
+        st.warning("Aucun fichier CSV/Parquet dans ce dataset.")
+        st.stop()
+
+    # Choix du fichier
+    selected_file = st.selectbox("Sélectionnez un fichier :", [f.name for f in files])
+
+    return dataset_path / selected_file

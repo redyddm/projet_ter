@@ -121,7 +121,6 @@ def recommandation_content_top_k(book_title, embeddings, model, books_df, knn, k
                                                               book_embedding, embeddings, books_names,
                                                               k)       
 
-
     # Si le livre n'est pas dans le dataset
     else:
         book_embedding = get_book_embedding(book_title, model)
