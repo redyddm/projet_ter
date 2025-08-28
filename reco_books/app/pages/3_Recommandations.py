@@ -5,8 +5,7 @@ import pickle
 import gensim
 from pathlib import Path
 from recommandation_de_livres.config import PROCESSED_DATA_DIR, MODELS_DIR
-from recommandation_de_livres.iads.utils import stars
-from recommandation_de_livres.iads.app_ui import display_book_card
+from recommandation_de_livres.iads.app_ui import display_book_card, stars
 from recommandation_de_livres.loaders.load_data import load_pkl, load_parquet
 from recommandation_de_livres.iads.collabo_utils import recommandation_collaborative_top_k
 from recommandation_de_livres.iads.content_utils import suggest_titles, recommandation_content_top_k, user_profile_embedding, recommandation_content_user_top_k
@@ -144,33 +143,43 @@ if st.button("Rechercher"):
                 top_books, _ = recommandation_content_top_k(
                     selected_title,
                     embeddings,
-                    model,
+                    None,
                     content_df,
                     knn=knn,
                     k=top_k
                 )
 
     elif reco_type == "Recommandations personnalisées":
-        embeddings_sbert = load_embeddings_sbert()
+        embeddings = load_embeddings_sbert()
         sbert_model = load_sbert_model()
         knn_sbert = load_knn_sbert()
         svd_model = load_svd_model()
-        top_books = recommandation_hybride(
-            user_id=st.session_state["user_id"],
-            collaborative_model=svd_model,
-            content_model=sbert_model,
-            content_df=content_df,
-            collaborative_df=ratings,
-            books=books,
-            embeddings=embeddings_sbert,
-            alpha=alpha,
-            knn=knn_sbert,
-            k=top_k,
-            top_k_content=50
-        )
+
+        item_id_to_idx = {item_id: idx for idx, item_id in enumerate(books['item_id'])}
+        user_vec = user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx)
+
+        if user_vec is not None:
+            # Reco basée sur profil utilisateur            
+            top_books = recommandation_hybride(
+                user_id=st.session_state["user_id"],
+                collaborative_model=svd_model,
+                content_model=None,
+                content_df=content_df,
+                collaborative_df=ratings,
+                books=books,
+                embeddings=embeddings,
+                alpha=alpha,
+                knn=knn_sbert,
+                k=top_k,
+                top_k_content=100
+            )
+        else:
+            st.warning("Vous n'avez aucun livre dans votre collection. Veuillez en ajouter afin de pouvoir recevoir des recommandations personnalisées.")
+            st.stop()
 
     # Merge pour récupérer les colonnes nécessaires comme average_rating
-    top_books['item_id'] = top_books['item_id'].astype(int)
+    top_books['item_id'] = top_books['item_id'].astype(object)
+    books['item_id'] = books['item_id'].astype(object)
     cols_to_keep = [c for c in books.columns if c not in top_books.columns]
     top_books_full = top_books.merge(
         books[cols_to_keep + ["item_id"]],
