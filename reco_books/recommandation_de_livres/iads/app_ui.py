@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from recommandation_de_livres.iads.utils import save_df_to_parquet
-from recommandation_de_livres.config import PROCESSED_DATA_DIR
+from recommandation_de_livres.config import RAW_DATA_DIR, INTERIM_DATA_DIR, PROCESSED_DATA_DIR
 from pathlib import Path
 import streamlit as st
 

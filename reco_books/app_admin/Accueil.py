@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from recommandation_de_livres.config import RAW_DATA_DIR, PROCESSED_DATA_DIR
-from recommandation_de_livres.iads.utils import choose_dataset_streamlit
+from recommandation_de_livres.iads.app_ui import choose_dataset_streamlit
 # --------------------- INTERFACE ---------------------
 
 st.title("📂 Sélection du dataset")

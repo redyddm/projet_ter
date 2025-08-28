@@ -17,6 +17,11 @@ st.title("⚙️ Recommandations")
 # -----------------------------
 # Chargement des données
 # -----------------------------
+
+if 'DIR' not in st.session_state:
+    st.error("⚠️ Aucun dataset sélectionné. Retournez à la page d'accueil pour en choisir un.")
+    st.stop()
+    
 DIR = st.session_state['DIR']
 
 @st.cache_data
@@ -34,6 +39,10 @@ def load_tfidf():
 @st.cache_resource
 def load_svd_model():
     return load_pkl(MODELS_DIR / DIR / "svd_model.pkl")
+
+@st.cache_resource
+def load_nmf_model():
+    return load_pkl(MODELS_DIR / DIR / "nmf_model.pkl")
 
 @st.cache_resource
 def load_w2v_model():
@@ -103,7 +112,7 @@ elif reco_mode == "Titre de départ":
 # -----------------------------
 model_type = st.selectbox(
     "Choisir le modèle",
-    ["Word2Vec", "Sentence-BERT", "SVD", "Hybride"]
+    ["Word2Vec", "Sentence-BERT", "SVD", "NMF", "Hybride"]
 )
 top_k = st.slider("Nombre de recommandations", 1, 20, 5)
 alpha = None
@@ -120,10 +129,17 @@ if st.button("Lancer la recommandation"):
     content_model = None
     knn = None
 
+    # Chargement des modèles collaboratifs
+    svd_model, nmf_model = None, None
+    if model_type == "SVD" or model_type == "Hybride":
+        svd_model = load_svd_model()
+    if model_type == "NMF":
+        nmf_model = load_nmf_model()
+
     # Si utilisateur et profil disponible
     if reco_mode == "Utilisateur" and selected_user is not None:
         for m in ["Word2Vec", "Sentence-BERT"]:
-            if model_type == m:
+            if model_type == m or (model_type=="Hybride" and content_model_type==m):
                 embeddings = load_embeddings_w2v() if m=="Word2Vec" else load_embeddings_sbert()
                 content_model = load_w2v_model() if m=="Word2Vec" else load_sbert_model()
                 knn = load_knn_w2v() if m=="Word2Vec" else load_knn_sbert()
@@ -141,23 +157,24 @@ if st.button("Lancer la recommandation"):
 
     if reco_mode == "Titre de départ" and selected_title:
         if model_type in ["Word2Vec", "Sentence-BERT"]:
-            embeddings = load_embeddings_w2v() if model_type=="Word2Vec" else load_embeddings_sbert()
-            content_model = load_w2v_model() if model_type=="Word2Vec" else load_sbert_model()
-            knn = load_knn_w2v() if model_type=="Word2Vec" else load_knn_sbert()
             top_books, _ = recommandation_content_top_k(
                 selected_title, embeddings, content_model, books, knn=knn, k=top_k
             )
 
     elif model_type == "SVD" and selected_user is not None:
-        svd_model = load_svd_model()
         top_books, _ = recommandation_collaborative_top_k(
             top_k, selected_user, svd_model, ratings, books
         )
+    
+    elif model_type == "NMF" and selected_user is not None:  # <-- Nouveau bloc NMF
+        top_books, _ = recommandation_collaborative_top_k(
+            top_k, selected_user, nmf_model, ratings, books
+        )
+
     elif model_type == "Hybride":
         embeddings = load_embeddings_w2v() if content_model_type=="Word2Vec" else load_embeddings_sbert()
         content_model = load_w2v_model() if content_model_type=="Word2Vec" else load_sbert_model()
         knn = load_knn_w2v() if content_model_type=="Word2Vec" else load_knn_sbert()
-        svd_model = load_svd_model()
         top_books = recommandation_hybride(
             user_id=selected_user,
             collaborative_model=svd_model,
