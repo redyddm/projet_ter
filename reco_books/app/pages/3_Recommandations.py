@@ -70,6 +70,9 @@ def load_knn_sbert():
 
 tfidf, tfidf_matrix = load_tfidf()
 content_df = load_content()
+embeddings = load_embeddings_sbert()
+knn = load_knn_sbert()
+svd_model = load_svd_model()
 
 # ---------------------------
 # Formulaire unique
@@ -108,24 +111,24 @@ if reco_type == "Recommandations personnalisées":
 # ---------------------------
 if st.button("Rechercher"):
 
+    item_id_to_idx = {item_id: idx for idx, item_id in enumerate(books['item_id'])}
+    user_vec = user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx)
+
     # Choix du modèle et embeddings selon reco_type
     if reco_type == "Recommandations basées sur vos goûts":
-        svd_model = load_svd_model()
-        top_books, _ = recommandation_collaborative_top_k(
-            k=top_k,
-            user_id=user_id,
-            model=svd_model,
-            ratings=ratings,
-            books=books
-        )
+        if user_vec is not None:
+            top_books, _ = recommandation_collaborative_top_k(
+                k=top_k,
+                user_id=user_id,
+                model=svd_model,
+                ratings=ratings,
+                books=books
+            )
+        else:
+            st.warning("Vous n'avez aucun livre dans votre collection. Veuillez en ajouter afin de pouvoir recevoir des recommandations basées sur vos goûts. Vous pouvez quand même avoir des recommandations selon un titre donné dans la section 'Livres proches en thèmes et styles'.")
+            st.stop()
 
     elif reco_type in ["Livres proches en thème et style"]:
-        embeddings = load_embeddings_sbert()
-        knn = load_knn_sbert()
-
-        # Vérifier si l'utilisateur a un profil
-        item_id_to_idx = {item_id: idx for idx, item_id in enumerate(books['item_id'])}
-        user_vec = user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx)
 
         if user_vec is not None:
             # Reco basée sur profil utilisateur
@@ -155,9 +158,6 @@ if st.button("Rechercher"):
         knn_sbert = load_knn_sbert()
         svd_model = load_svd_model()
 
-        item_id_to_idx = {item_id: idx for idx, item_id in enumerate(books['item_id'])}
-        user_vec = user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx)
-
         if user_vec is not None:
             # Reco basée sur profil utilisateur            
             top_books = recommandation_hybride(
@@ -174,7 +174,7 @@ if st.button("Rechercher"):
                 top_k_content=100
             )
         else:
-            st.warning("Vous n'avez aucun livre dans votre collection. Veuillez en ajouter afin de pouvoir recevoir des recommandations personnalisées.")
+            st.warning("Vous n'avez aucun livre dans votre collection. Veuillez en ajouter afin de pouvoir recevoir des recommandations personnalisées. Vous pouvez quand même avoir des recommandations selon un titre donné dans la section 'Livres proches en thèmes et styles'.")
             st.stop()
 
     # Merge pour récupérer les colonnes nécessaires comme average_rating
