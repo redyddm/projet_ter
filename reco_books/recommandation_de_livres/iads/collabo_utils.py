@@ -8,16 +8,6 @@ def rescale_ratings(ratings, new_min=1, new_max=5):
     old_max = ratings.max()
     return ((ratings - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
 
-def get_unrated_item_first_version(user_id, ratings):
-    unique_item_id = set(ratings['item_id'])
-
-    rated_item_id = set(ratings.loc[ratings['user_id']==user_id, 'item_id'])
-    rated_title = set(ratings.loc[ratings['user_id']==user_id, 'title'])
-
-    unrated_item_id = unique_item_id.difference(rated_item_id)
-
-    return unrated_item_id
-
 def get_unrated_item(user_id, ratings):
     
     # dictionnaire item_id -> title
@@ -48,41 +38,6 @@ def get_book(item_id, books):
         return match.iloc[0]  # retourne une chaîne
     return 'Titre inconnu'
 
-def get_book_cover(item_id, books):
-    match = books[books['item_id'] == item_id]
-    if not match.empty:
-        return match.iloc[0]['image_url']  # retourne une chaîne
-    return 'Couverture non trouvée'
-
-
-def get_books_list(item_id_list, books):
-
-    mask=books['item_id'].isin(item_id_list)
-
-    return books[mask].drop_duplicates(subset='item_id').reset_index(drop=True)
-
-def predict_rating(user_id, title, model, data):
-    index=get_index(title, data)
-    rating=model.predict(uid=user_id, iid=index)
-
-    return rating.est
-
-def predict_rating_item_id(user_id, item_id, model):
-    rating=model.predict(uid=user_id, iid=item_id)
-
-    return rating.est
-
-# Recommandation aléatoire
-
-def recommandation_collaborative(user_id, model, ratings, books, note=4):
-    non_note=list(get_unrated_item(user_id, ratings))
-    random.shuffle(non_note)
-    
-    for item_id in non_note:
-        rating = predict_rating_item_id(user_id, item_id, model)
-        if rating > note:
-            return get_book(item_id, books)
-        
 def predict_unrated_books(user_id, model, non_note):
 
     pred_dict = {
@@ -112,6 +67,9 @@ def recommandation_collaborative_top_k(k, user_id, model, ratings, books):
 
     top_k = pred_ratings.head(k).copy()
 
-    top_k_df = top_k['item_id'].apply(get_book, books=ratings)
+    if 'title' in ratings.columns:
+        top_k_df = top_k['item_id'].apply(get_book, books=ratings)
+    else:
+        top_k_df = top_k['item_id'].apply(get_book, books=books)
 
     return top_k_df, top_k
