@@ -20,7 +20,7 @@ notebooks
 datasets                    <- dossier avec dataset initial ([text](https://www.kaggle.com/datasets/arashnic/book-recommendation-dataset))
 
 
-reco_books
+reco_books                  <- dossier principal du projet 
 ├── .env
 ├── .gitignore
 ├── Makefile
@@ -29,33 +29,33 @@ reco_books
 ├── requirements.txt
 ├── setup.cfg
 │
-├── data                  <- données du projet
+├── data                    <- données du projet
 │ ├── external
-│ ├── interim             <- données intermédiaires (quelques prétraitements)
-│ ├── processed           <- données prêtes 
+│ ├── interim               <- données intermédiaires (quelques prétraitements)
+│ ├── processed             <- données prêtes 
 │ │ ├── ... (nombreux fichiers)
-│ └── raw                 <- données brutes
+│ └── raw                   <- données brutes
 │ ├── ... (nombreux fichiers)
 │
 ├── docs
 │ ├── docs
 │ └── mkdocs.yml
 │
-├── models                <- dossier des modèles
-├── notebooks             <- dossier des notebooks
-├── open_library          <- dossier contenant les scripts pour récupérer les informations supplémentaires de livres│
+├── models                  <- dossier des modèles
+├── notebooks               <- dossier des notebooks
+├── open_library            <- dossier contenant les scripts pour récupérer les informations supplémentaires de livres│
 └── recommandation_de_livres <- module contenant les étapes principales
   ├── init.py
-  ├── config.py           <- fichier avec différentes variables globales
-  ├── build_dataset       <- dossier avec les scripts créant les datasets
-  ├── dataset             <- dossier avec les scripts appelant build_dataset pour créer les versions finales des datasets
-  ├── features            <- dossier avec les scripts permettant de créer les features
-  ├── modeling            <- dossier avec les scripts permettant d'entrainer et tester les modèles
+  ├── config.py             <- fichier avec différentes variables globales
+  ├── build_dataset         <- dossier avec les scripts créant les datasets
+  ├── dataset               <- dossier avec les scripts appelant build_dataset pour créer les versions finales des datasets
+  ├── features              <- dossier avec les scripts permettant de créer les features
+  ├── modeling              <- dossier avec les scripts permettant d'entrainer et tester les modèles
   │ ├── predict
   │ └── train
-  ├── iads                <- dossier avec les scripts de fonctions usuelles
-  ├── loaders             <- dossier avec script chargeant les données
-  └── preprocessing       <- dossier avec les scripts permettant de faire le prétraitement des données
+  ├── iads                  <- dossier avec les scripts de fonctions usuelles
+  ├── loaders               <- dossier avec script chargeant les données
+  └── preprocessing         <- dossier avec les scripts permettant de faire le prétraitement des données
 
 
 ```
