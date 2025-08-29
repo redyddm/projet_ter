@@ -18,12 +18,9 @@ EXTERNAL_DATA_DIR = DATA_DIR / "external"
 
 MODELS_DIR = PROJ_ROOT / "models"
 
-REPORTS_DIR = PROJ_ROOT / "reports"
-FIGURES_DIR = REPORTS_DIR / "figures"
-
 DB_PARAMS = {
-    "user": "postgres",
-    "password": "redsql",
+    "user": "XXX",
+    "password": "XXX",
     "host": "localhost",
     "dbname": "Library"
 }
