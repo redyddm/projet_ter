@@ -1,2 +1,2 @@
-user='postgres'
-password='redsql'
+user='XXX'
+password='XXX'
