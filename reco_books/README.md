@@ -2,6 +2,8 @@
 
 ## Project Organization
 
+```
+
 ├── .env
 ├── .gitignore
 ├── Makefile
@@ -37,6 +39,9 @@
   ├── iads                <- dossier avec les scripts de fonctions usuelles
   ├── loaders             <- dossier avec script chargeant les données
   └── preprocessing       <- dossier avec les scripts permettant de faire le prétraitement des données
+
+
+```
 
 ### Notes
 
