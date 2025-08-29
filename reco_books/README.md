@@ -1,82 +1,45 @@
-# 
+# recommandation_de_livres
 
 ## Project Organization
 
-```
-- .env
-- .gitignore
-- **app/**
-  - Accueil.py
-  - **pages/**
-    - 1_Bibliothèque.py
-    - 2_Ma_Collection.py
-    - 3_Recommandations.py
-- **app_admin/**
-  - Accueil.py
-  - **data/**
-    - **raw/**
-      - books_user.parquet
-      - ratings_user.parquet
-  - **pages/**
-    - ... (8 items)
-- **data/**
-  - **external/**
-    - .gitkeep
-  - **interim/**
-    - .gitkeep
-    - **goodreads/**
-      - ... (17 items)
-    - **recommender/**
-      - ... (20 items)
-  - **processed/**
-    - .gitkeep
-    - **goodreads/**
-      - ... (19 items)
-    - **recommender/**
-      - ... (23 items)
-  - **raw/**
-    - .gitkeep
-    - **goodreads/**
-      - ... (6 items)
-    - **recommender/**
-      - Books.csv
-      - Ratings.csv
-      - Users.csv
-- **docs/**
-  - .gitkeep
-  - **docs/**
-    - getting-started.md
-    - index.md
-  - mkdocs.yml
-  - README.md
-- Makefile
-- **models/**
-  - .gitkeep
-  - **goodreads/**
-    - ... (11 items)
-  - **recommender/**
-    - ... (11 items)
-- **notebooks/**
-  - .gitkeep
-  - notebook.ipynb
-- **open_library/**
-  - openlibrary_extract.py
-- pyproject.toml
-- **recommandation_de_livres/**
-  - ... (9 items)
-- redame.py
-- **references/**
-  - .gitkeep
-- **reports/**
-  - .gitkeep
-  - **figures/**
-    - .gitkeep
-    - precision_at_k.png
-    - recall_at_k.png
-- requirements.txt
-```
+├── .env
+├── .gitignore
+├── Makefile
+├── README.md
+├── pyproject.toml
+├── requirements.txt
+├── setup.cfg
+│
+├── data                  <- données du projet
+│ ├── external
+│ ├── interim             <- données intermédiaires (quelques prétraitements)
+│ ├── processed           <- données prêtes 
+│ │ ├── ... (nombreux fichiers)
+│ └── raw                 <- données brutes
+│ ├── ... (nombreux fichiers)
+│
+├── docs
+│ ├── docs
+│ └── mkdocs.yml
+│
+├── models                <- dossier des modèles
+├── notebooks             <- dossier des notebooks
+├── open_library          <- dossier contenant les scripts pour récupérer les informations supplémentaires de livres│
+└── recommandation_de_livres <- module contenant les étapes principales
+  ├── init.py
+  ├── config.py           <- fichier avec différentes variables globales
+  ├── build_dataset       <- dossier avec les scripts créant les datasets
+  ├── dataset             <- dossier avec les scripts appelant build_dataset pour créer les versions finales des datasets
+  ├── features            <- dossier avec les scripts permettant de créer les features
+  ├── modeling            <- dossier avec les scripts permettant d'entrainer et tester les modèles
+  │ ├── predict
+  │ └── train
+  ├── iads                <- dossier avec les scripts de fonctions usuelles
+  ├── loaders             <- dossier avec script chargeant les données
+  └── preprocessing       <- dossier avec les scripts permettant de faire le prétraitement des données
 
 ### Notes
 
-- Les dossiers volumineux ou contenant de nombreux fichiers sont résumés.
-- Fichiers temporaires ou caches sont ignorés.
+- Les dossiers volumineux ou contenant de nombreux fichiers sont résumés avec `... (nombreux fichiers)`.  
+- Les fichiers temporaires ou caches (`__pycache__`, `.pyc`, `.git`) sont ignorés.  
+- Ce README donne une **vue d’ensemble** de la structure pour les développeurs et collaborateurs.
