@@ -1,7 +1,19 @@
 import numpy as np
 
 def precision_recall_at_k(predictions, k=10, threshold=3.5):
-    """Calcule Precision@K et Recall@K pour un ensemble de prédictions Surprise"""
+    """
+    Calcule la précision et le rappel moyens @K pour un ensemble de prédictions générées avec Surprise.
+
+    Args:
+        predictions (list of tuples) : Liste de prédictions au format Surprise `(uid, iid, true_r, est, details)`
+        k (int, optional) : Nombre d’items à considérer pour le calcul de Precision@K et Recall@K. Defaults to 10.
+        threshold (float, optional) : Seuil au-dessus duquel une note est considérée comme positive. Defaults to 3.5.
+
+    Returns:
+        tuple: 
+            - precision_mean (float) : Moyenne des Precision@K pour tous les utilisateurs
+            - recall_mean (float) : Moyenne des Recall@K pour tous les utilisateurs
+    """
     user_est_true = {}
     for uid, _, true_r, est, _ in predictions:
         user_est_true.setdefault(uid, []).append((est, true_r))

@@ -68,6 +68,19 @@ def combine_text(row, cols):
     return ' '.join(parts)
 
 def user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx):
+    """
+    Calcule le vecteur d'embedding représentant le profil d'un utilisateur.
+
+    Args:
+        user_id (int ou str) : ID de l'utilisateur
+        ratings (pd.DataFrame) : DataFrame contenant les colonnes ['user_id', 'item_id', 'rating']
+        embeddings (np.array) : Matrice des embeddings des items (shape: nombre_items x dimension_embedding)
+        item_id_to_idx (dict) : Dictionnaire mappant chaque item_id à son index dans `embeddings`
+
+    Returns:
+        np.array ou None : Vecteur d'embedding moyen pondéré par les notes de l'utilisateur,
+                           ou None si l'utilisateur n'a pas de notes ou aucun embedding correspondant
+    """
     rated_books = ratings[ratings["user_id"] == user_id]
     if rated_books.empty:
         return None
@@ -76,7 +89,7 @@ def user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx):
     for _, row in rated_books.iterrows():
         idx = item_id_to_idx.get(row['item_id'])
         if idx is not None:
-            vectors.append(embeddings[idx] * row['rating'])  # pondération par la note
+            vectors.append(embeddings[idx] * row['rating'])
 
     if not vectors:
         return None
