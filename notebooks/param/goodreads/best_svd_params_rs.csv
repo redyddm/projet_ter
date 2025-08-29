@@ -1,0 +1,2 @@
+Model,RMSE,Model Configuration
+SVD,0.8847504010718411,"{'n_factors': 70, 'lr_all': 0.002, 'reg_all': 0.05, 'n_epochs': 50}"
