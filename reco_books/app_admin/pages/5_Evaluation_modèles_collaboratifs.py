@@ -126,7 +126,7 @@ if st.button("🚀 Lancer la cross-validation complète"):
     styled_summary = summary.style.highlight_max(
         subset=["Precision@K", "Recall@K", "CatalogCoverage"], color="lightgreen", axis=0
     ).highlight_min(
-        subset=["RMSE", "MAE"], color="lightblue", axis=0
+        subset=["RMSE", "MAE", "TempsTotal(s)", "TempsMoyenParFold(s)"], color="lightblue", axis=0
     )
     st.dataframe(styled_summary)
     st.success("Évaluation terminée ✅")
