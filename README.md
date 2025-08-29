@@ -28,6 +28,15 @@ reco_books                  <- dossier principal du projet
 ├── pyproject.toml
 ├── requirements.txt
 ├── setup.cfg
+|
+|
+├── app                     <- dossier de l'interface streamlit utilisateur
+│ ├── pages                 <- dossier des pages de l'interface
+│ └── Accueil.py            <- page d'accueil de l'interface
+│
+├── app_admin               <- dossier de l'interface streamlit administrateur  
+│ ├── pages                 <- dossier des pages de l'interface
+│ └── Accueil.py            <- page d'accueil de l'interface
 │
 ├── data                    <- données du projet
 │ ├── external
