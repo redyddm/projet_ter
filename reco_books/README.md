@@ -47,4 +47,4 @@
 
 - Les dossiers volumineux ou contenant de nombreux fichiers sont résumés avec `... (nombreux fichiers)`.  
 - Les fichiers temporaires ou caches (`__pycache__`, `.pyc`, `.git`) sont ignorés.  
-- Ce README donne une **vue d’ensemble** de la structure pour les développeurs et collaborateurs.
+- Ce README donne une **vue d’ensemble** de la structure du dossier reco_books.
