@@ -3,7 +3,6 @@
 ## Project Organization
 
 ```
-
 ├── .env
 ├── .gitignore
 ├── Makefile
@@ -11,34 +10,44 @@
 ├── pyproject.toml
 ├── requirements.txt
 ├── setup.cfg
+|
+|
+├── app                     <- dossier de l'interface streamlit utilisateur
+│ ├── pages                 <- dossier des pages de l'interface
+│ └── Accueil.py            <- page d'accueil de l'interface
 │
-├── data                  <- données du projet
+├── app_admin               <- dossier de l'interface streamlit administrateur  
+│ ├── pages                 <- dossier des pages de l'interface
+│ └── Accueil.py            <- page d'accueil de l'interface
+│
+├── data                    <- données du projet
 │ ├── external
-│ ├── interim             <- données intermédiaires (quelques prétraitements)
-│ ├── processed           <- données prêtes 
+│ ├── interim               <- données intermédiaires (quelques prétraitements)
+│ ├── processed             <- données prêtes 
 │ │ ├── ... (nombreux fichiers)
-│ └── raw                 <- données brutes
+│ └── raw                   <- données brutes
 │ ├── ... (nombreux fichiers)
 │
 ├── docs
 │ ├── docs
 │ └── mkdocs.yml
 │
-├── models                <- dossier des modèles
-├── notebooks             <- dossier des notebooks
-├── open_library          <- dossier contenant les scripts pour récupérer les informations supplémentaires de livres│
+├── models                  <- dossier des modèles
+├── notebooks               <- dossier des notebooks
+├── open_library            <- dossier contenant les scripts pour récupérer les informations supplémentaires de livres│
 └── recommandation_de_livres <- module contenant les étapes principales
   ├── init.py
-  ├── config.py           <- fichier avec différentes variables globales
-  ├── build_dataset       <- dossier avec les scripts créant les datasets
-  ├── dataset             <- dossier avec les scripts appelant build_dataset pour créer les versions finales des datasets
-  ├── features            <- dossier avec les scripts permettant de créer les features
-  ├── modeling            <- dossier avec les scripts permettant d'entrainer et tester les modèles
+  ├── config.py             <- fichier avec différentes variables globales
+  ├── build_dataset         <- dossier avec les scripts créant les datasets
+  ├── dataset               <- dossier avec les scripts appelant build_dataset pour créer les versions finales des datasets
+  ├── features              <- dossier avec les scripts permettant de créer les features
+  ├── modeling              <- dossier avec les scripts permettant d'entrainer et tester les modèles
   │ ├── predict
   │ └── train
-  ├── iads                <- dossier avec les scripts de fonctions usuelles
-  ├── loaders             <- dossier avec script chargeant les données
-  └── preprocessing       <- dossier avec les scripts permettant de faire le prétraitement des données
+  ├── iads                  <- dossier avec les scripts de fonctions usuelles
+  ├── loaders               <- dossier avec script chargeant les données
+  └── preprocessing         <- dossier avec les scripts permettant de faire le prétraitement des données
+
 
 
 ```
