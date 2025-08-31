@@ -78,7 +78,7 @@ def imdb_weighted_rating(v, R, m, C):
     Calcule la note pondérée IMDB pour un item.
 
     Args:
-        v (float) : nombre de votes 
+        v (int) : nombre de votes 
         R (float) : note moyenne de l'item
         m (float) : seuil de popularité
         C (float) : moyenne générale des notes
