@@ -9,7 +9,7 @@ from recommandation_de_livres.iads.content_utils import (
     recommandation_content_top_k, suggest_titles, user_profile_embedding, recommandation_content_user_top_k
 )
 from recommandation_de_livres.iads.hybrid_utils import recommandation_hybride
-from recommandation_de_livres.loaders.load_data import load_parquet, load_pkl, load_csv
+from recommandation_de_livres.loaders.load_data import load_parquet, load_pkl
 from recommandation_de_livres.config import PROCESSED_DATA_DIR, MODELS_DIR
 
 st.title("⚙️ Recommandations")

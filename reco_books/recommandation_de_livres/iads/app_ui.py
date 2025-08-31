@@ -31,6 +31,8 @@ def safe_year(book, key="year", default="Inconnue"):
 def display_book_card(book, allow_add=True, page_context="reco", show_rating_type="user"):
     """
     Affiche la carte d'un livre et gère le panier temporaire.
+    Args:
+        book (pd.DataFrame)
     
     show_rating_type : "user" pour rating personnel, "average" pour average_rating
     """
@@ -92,6 +94,8 @@ def display_book_card(book, allow_add=True, page_context="reco", show_rating_typ
 
 # --- Validation des ajouts en lot ---
 def validate_pending_ratings():
+    """ Enregistre la note donnée par l'utilisateur et l'ajoute au fichier ratings.
+    """
     if st.session_state.get("pending_ratings"):
         new_entries = pd.DataFrame(st.session_state["pending_ratings"])
         books = st.session_state['books']
@@ -130,25 +134,3 @@ def choose_dataset_streamlit(raw=True):
     st.session_state['dataset_path']=dataset_path
 
     return datasets, selected_dataset
-
-def display_files_dataset(raw=True):
-    """
-    Liste dynamiquement les datasets et fichiers dans RAW_DATA_DIR ou PROCESSED_DATA_DIR
-    et retourne le chemin du fichier sélectionné.
-    """
-
-    datasets=choose_dataset_streamlit(raw=raw)
-
-    # Choix du dataset
-    dataset_path = st.session_state['dataset_path']
-
-    # Lister les fichiers disponibles
-    files = list(dataset_path.glob("*.csv")) + list(dataset_path.glob("*.parquet"))
-    if not files:
-        st.warning("Aucun fichier CSV/Parquet dans ce dataset.")
-        st.stop()
-
-    # Choix du fichier
-    selected_file = st.selectbox("Sélectionnez un fichier :", [f.name for f in files])
-
-    return dataset_path / selected_file

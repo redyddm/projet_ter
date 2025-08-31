@@ -2,6 +2,8 @@ from gensim.models import Word2Vec
 from gensim.models.callbacks import CallbackAny2Vec
 from tqdm import tqdm
 
+# Cette classe permet un suivi de l'entrainement de Word2Vec sur le terminal
+
 class TqdmCorpus:
     def __init__(self, sentences):
         self.sentences = sentences
