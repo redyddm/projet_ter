@@ -2,7 +2,7 @@ import ast
 from tqdm import tqdm
 import pandas as pd
 from recommandation_de_livres.iads.utils import detect_lang
-from recommandation_de_livres.iads.text_cleaning import nettoyage_avance
+from recommandation_de_livres.iads.text_cleaning import nettoyage_avance, nettoyage_titre
 from open_library.openlibrary_extract import *
 from lingua import Language, LanguageDetectorBuilder
 
@@ -130,6 +130,8 @@ def remove_duplicates(books, title_col="title"):
     tqdm.pandas(desc="Nettoyage des textes")
     books['title_clean'] = books[title_col].progress_apply(nettoyage_avance)
     books = books.drop_duplicates(subset='title_clean').reset_index(drop=True)
+    books['title_clean'] = books[title_col].progress_apply(nettoyage_titre)
+    
     return books
 
 def map_author_names(books_df, authors_df, authors_col="authors"):
