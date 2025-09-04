@@ -4,6 +4,8 @@ from recommandation_de_livres.iads.app_ui import display_book_card
 books = st.session_state["books"]
 ratings = st.session_state["ratings"]
 
+ratings['average_rating'] = ratings.groupby('item_id')['rating'].transform('mean')
+
 avg_ratings = ratings[["item_id", "average_rating"]].drop_duplicates()
 books_avg = books.merge(avg_ratings, on="item_id", how="left")
 
@@ -11,7 +13,7 @@ books_avg = books.merge(avg_ratings, on="item_id", how="left")
 sort_column = st.selectbox("Trier par :", ["Titre", "Auteur", "Note moyenne"])
 sort_order = st.selectbox("Ordre :", ["Croissant", "Décroissant"])
 
-sort_col_map = {"Titre": "title", "Auteur": "authors", "Note moyenne": "average_rating"}
+sort_col_map = {"Titre": "title_clean", "Auteur": "authors", "Note moyenne": "average_rating"}
 col_to_sort = sort_col_map[sort_column]
 ascending = sort_order == "Croissant"
 
