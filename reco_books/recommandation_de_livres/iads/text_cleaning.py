@@ -56,19 +56,11 @@ def nettoyage_avance(text):
         return ""
 
     text = text.lower()
-    print("1", text)
     text = re.sub(r'\(.*?\)', '', text)
-    print("2",text)
     text = re.sub(r'[^a-z0-9\s]', ' ', text)
-    print("3",text)
     text = " ".join(gensim.utils.simple_preprocess(text))
-    print("4",text)
     text = remove_custom_stopwords(text)
-    print("5",text)
     text = re.sub(r'\s+', ' ', text).strip()
-    print("6",text)
     
     return text
-
-print(nettoyage_avance("You Cannot Be Serious"))
 
