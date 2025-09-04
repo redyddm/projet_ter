@@ -57,7 +57,7 @@ def nettoyage_avance(text):
     text = re.sub(r'\((?:volume|tome|edition|part|book)\s*\d*\)', '', text)
     text = re.sub(r'\((.*?)\)', r'\1', text)
     text = re.sub(r'[^a-z0-9\s]', ' ', text)
-    text = " ".join(gensim.utils.simple_preprocess(text))
+    text = " ".join(gensim.utils.simple_preprocess(text, min_len=1))
     text = remove_custom_stopwords(text)
     text = re.sub(r'\s+', ' ', text).strip()
     
