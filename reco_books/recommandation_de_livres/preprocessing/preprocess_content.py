@@ -84,9 +84,16 @@ def add_language_column(books, title_col="title", desc_col="description", lang_c
     mask = books[lang_col].isna()
 
     books.loc[mask, lang_col] = (
-        (books.loc[mask, title_col].fillna('') + ' ' + books.loc[mask, desc_col].fillna(''))
+        books.loc[mask, title_col].fillna('')
         .progress_apply(detect_lang)
     )
+    
+    # Si on veut utiliser les descriptions
+
+    #books.loc[mask, lang_col] = (
+    #    (books.loc[mask, title_col].fillna('') + ' ' + books.loc[mask, desc_col].fillna(''))
+    #    .progress_apply(detect_lang)
+    #)
     return books
 
 def filter_books_basic(books, title_col="title", desc_col="description", lang_col=None, allowed_langs=None):

@@ -41,6 +41,9 @@ def main(
     add_lang_input = input("Ajouter les langues [2] : True (1), False (2) ") or "2"
     add_lang = True if add_lang_input=="1" else False
 
+    get_description_input = input("Récupérer les informations depuis la base de données [2] : True (1), False (2) ") or "2"
+    get_description = True if get_description_input=="1" else False
+
     update_input = input("Mettre à jour la base de données [2] : True (1), False (2) ") or "2"
     update = True if update_input=="1" else False
 
@@ -59,7 +62,8 @@ def main(
         dataset_dir=INTERIM_DATA_DIR / DIR, 
         allowed_langs=allowed_langs,
         add_language=add_lang,
-        update_db=update
+        update_db=update, 
+        get_description=get_description
     )
 
     logger.info(f"Saving processed dataset to {output_path_csv} and {output_path_parquet}")

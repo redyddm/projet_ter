@@ -3,8 +3,10 @@ import psycopg2
 from tqdm import tqdm
 import re
 
-user='XXX'
-password='XXX'
+from recommandation_de_livres.config import DB_PARAMS
+
+user=DB_PARAMS['user']
+password=DB_PARAMS['password']
 
 def get_key_books_list(isbn_list):
     """ Renvoie une liste de key de la table 'editions' correspondant aux isbn donnés.
@@ -88,8 +90,8 @@ def get_infos_by_isbn_list(isbn_list):
     """
     conn = psycopg2.connect(
         dbname='openlibrary',
-        user='XXX', 
-        password='XXX', 
+        user=user, 
+        password=password, 
         host='localhost',
         port='5432'
     )
