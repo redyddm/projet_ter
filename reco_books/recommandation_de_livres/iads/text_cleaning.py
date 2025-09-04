@@ -3,8 +3,7 @@ import html
 import gensim
 from gensim.parsing.preprocessing import STOPWORDS
 
-book_stopwords = {
-    "a", "an", "the",
+book_stopwords = {"a", "an", "the"
 }
 
 def remove_custom_stopwords(text):
@@ -42,6 +41,24 @@ def nettoyage_leger(text):
         text = re.sub(r"\s+", " ", text).strip() 
         return text 
     return ""
+
+def nettoyage_titre(text):
+    """ On nettoie les texte de sorte à pouvoir les comparer.
+        Args:
+            text (str) : texte à nettoyer
+        Returns:
+            text (str) : texte nettoyé
+    """
+    if not isinstance(text, str):
+        return ""
+    
+    text = text.lower()
+    text = re.sub(r'\((?:volume|tome|edition|part|book)\s*\d*\)', '', text)
+    text = re.sub(r'\((.*?)\)', r'\1', text)
+    text = re.sub(r'[^a-z0-9\s]', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    return text
 
 def nettoyage_avance(text):
     """ On nettoie les texte de sorte à pouvoir les comparer.
