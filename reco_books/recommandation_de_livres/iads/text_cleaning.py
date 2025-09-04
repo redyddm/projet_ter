@@ -43,7 +43,7 @@ def nettoyage_leger(text):
     return ""
 
 def nettoyage_titre(text):
-    """ On nettoie les texte de sorte à pouvoir les comparer.
+    """ On nettoie les textes pour le tri.
         Args:
             text (str) : texte à nettoyer
         Returns:
@@ -61,7 +61,7 @@ def nettoyage_titre(text):
     return text
 
 def nettoyage_avance(text):
-    """ On nettoie les texte de sorte à pouvoir les comparer.
+    """ On nettoie les textes de sorte à pouvoir les comparer.
         Args:
             text (str) : texte à nettoyer
         Returns:
