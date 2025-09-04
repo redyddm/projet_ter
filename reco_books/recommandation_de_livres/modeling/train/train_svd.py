@@ -16,6 +16,9 @@ app = typer.Typer()
 DIR = choose_dataset_interactively()
 print(f"Dataset choisi : {DIR}")
 
+raing_max_input = input("Note maximale possible [5] : ")
+rating_max = int(raing_max_input) if raing_max_input.strip() != "" else 5
+
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
@@ -27,11 +30,7 @@ def main(
 
     collaborative_df = load_parquet(features_path)
 
-    if DIR == "recommender":
-        reader = Reader(rating_scale=(1,10))
-
-    else:
-        reader = Reader(rating_scale=(1,5))
+    reader = Reader(rating_scale=(1, rating_max))
 
     data = Dataset.load_from_df(collaborative_df[['user_id','item_id','rating']], reader)
     trainset = data.build_full_trainset()
