@@ -5,8 +5,6 @@ from gensim.parsing.preprocessing import STOPWORDS
 
 book_stopwords = {
     "a", "an", "the",
-    "and", "or", "but",
-    "of", "in", "on", "to", "for", "by", "with", "at", "from", "about", "as", "into", "like", "through", "after", "over", "between", "out", "against", "during", "without", "before", "under", "around", "among"
 }
 
 def remove_custom_stopwords(text):
@@ -54,13 +52,13 @@ def nettoyage_avance(text):
     """
     if not isinstance(text, str):
         return ""
-
+    
     text = text.lower()
-    text = re.sub(r'\(.*?\)', '', text)
+    text = re.sub(r'\((?:volume|tome|edition|part|book)\s*\d*\)', '', text)
+    text = re.sub(r'\((.*?)\)', r'\1', text)
     text = re.sub(r'[^a-z0-9\s]', ' ', text)
     text = " ".join(gensim.utils.simple_preprocess(text))
     text = remove_custom_stopwords(text)
     text = re.sub(r'\s+', ' ', text).strip()
     
     return text
-
