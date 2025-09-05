@@ -27,6 +27,7 @@ if "ratings_count" not in books.columns:
     books = books.merge(rating_count, on='item_id', how='left')
     st.session_state["books"] = books
 
+ratings['user_id']=ratings['user_id'].astype(str)
 # ---------------------------
 # Chargement ressources
 # ---------------------------
@@ -82,7 +83,6 @@ reco_type = st.selectbox(
 top_k = st.slider("Nombre de recommandations", 1, 20, 5)
 
 user_id = st.session_state["user_id"]
-
 # Champ titre pour recherche contenu
 selected_title = None
 if str(user_id) not in str(ratings['user_id']):
@@ -106,7 +106,6 @@ if reco_type == "Recommandations personnalisées":
 # Recherche et affichage
 # ---------------------------
 if st.button("Rechercher"):
-
     # vecteur utilisateur si dispo
     item_id_to_idx = {item_id: idx for idx, item_id in enumerate(books['item_id'])}
     user_vec = user_profile_embedding(user_id, ratings, embeddings, item_id_to_idx)
